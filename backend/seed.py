@@ -1,8 +1,14 @@
 """Seed database with sample products"""
 import uuid
+import sys
+import os
 from sqlalchemy.orm import Session
-from .database import engine, get_db
-from . import models
+
+# Add parent directory to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from app.database import engine, get_db
+from app import models
 
 # Sample products data
 SAMPLE_PRODUCTS = [

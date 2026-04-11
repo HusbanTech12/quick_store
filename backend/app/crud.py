@@ -2,10 +2,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc
 from typing import List, Optional, Tuple
 from . import models, schemas
-from passlib.context import CryptContext
+import bcrypt
 import uuid
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt"""
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 # ========== User CRUD ==========
@@ -19,7 +29,7 @@ def get_user(db: Session, user_id: uuid.UUID) -> Optional[models.User]:
 
 
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
-    hashed_password = pwd_context.hash(user.password)
+    hashed_password = hash_password(user.password)
     db_user = models.User(
         email=user.email,
         name=user.name,
@@ -29,10 +39,6 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.commit()
     db.refresh(db_user)
     return db_user
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
 
 
 # ========== Product CRUD ==========

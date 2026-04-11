@@ -1,11 +1,19 @@
 import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+
+# Load environment variables from .env file
+load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+psycopg2://postgres:postgres@localhost:5432/ecommerce_db"
 )
+
+# Add sslmode for Neon database if not already present
+if "neon" in DATABASE_URL.lower() and "sslmode" not in DATABASE_URL.lower():
+    DATABASE_URL = DATABASE_URL + "?sslmode=require"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
