@@ -29,10 +29,10 @@ def create_order(
 
 @router.get("/", response_model=List[schemas.OrderSummary])
 def get_orders(
-    skip: int = 0,
-    limit: int = 20,
     db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[schemas.UserResponse, Depends(get_current_user)]
+    current_user: Annotated[schemas.UserResponse, Depends(get_current_user)],
+    skip: int = 0,
+    limit: int = 20
 ):
     """Get orders for current user"""
     orders = crud.get_orders(db, skip=skip, limit=limit, user_id=current_user.id)

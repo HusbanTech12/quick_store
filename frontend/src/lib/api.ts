@@ -86,17 +86,8 @@ export const productsAPI = {
     sort_by?: "created_at" | "price" | "title" | "stock";
     sort_order?: "asc" | "desc";
     featured_only?: boolean;
-<<<<<<< HEAD
   }): Promise<AxiosResponse<Product[]>> => {
     return api.get<Product[]>("/products", { params });
-=======
-  }) => {
-    const response = await api.get<Product[]>("/products", { params });
-    return {
-      data: response.data,
-      total: parseInt(response.headers["x-total-count"] || "0", 10),
-    };
->>>>>>> 1551b0ae5580588a9ce383fb80c7b9910c18be27
   },
 
   getById: async (id: string): Promise<AxiosResponse<Product>> => {

@@ -47,10 +47,9 @@ module.exports = defineConfig({
         'all': '0.2s ease-out',
       },
     },
-  },  // End theme.extend
+  },
   plugins: [
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
   ],
 });

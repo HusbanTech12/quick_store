@@ -5,18 +5,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
-from pydantic import EmailStr
-import os
 
 from .. import schemas, crud
 from ..database import get_db
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
-<<<<<<< HEAD
-=======
-# Load secret key from environment variable
->>>>>>> 1551b0ae5580588a9ce383fb80c7b9910c18be27
+
+
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days

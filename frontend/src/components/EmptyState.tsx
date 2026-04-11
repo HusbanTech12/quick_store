@@ -1,7 +1,7 @@
 "use client";
 
-import { FC, ReactNode } from "react";
-import { Package, ShoppingCart, Search, AlertTriangle, Ban } from "lucide-react";
+import { FC } from "react";
+import { Package, ShoppingCart, Search, AlertTriangle, Ban, LucideIcon } from "lucide-react";
 import Link from "next/link";
 import Button from "./Button";
 
@@ -14,7 +14,7 @@ interface EmptyStateProps {
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
-  icon?: ReactNode;
+  icon?: LucideIcon;
 }
 
 const icons = {
@@ -64,6 +64,8 @@ const EmptyState: FC<EmptyStateProps> = ({
     general: {
       title: "Nothing here yet",
       description: "There's nothing to display at the moment.",
+      actionLabel: undefined,
+      actionHref: undefined,
     },
   };
 
@@ -77,24 +79,19 @@ const EmptyState: FC<EmptyStateProps> = ({
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
       <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
-        {typeof Icon === "function" ? (
-          <Icon className="w-10 h-10 text-muted-foreground" />
-        ) : (
-          Icon
-        )}
+        <Icon className="w-10 h-10 text-muted-foreground" />
       </div>
       <h3 className="text-xl font-semibold mb-2">{content.title}</h3>
       <p className="text-muted-foreground max-w-md mb-6">{content.description}</p>
-      {content.actionLabel && (
-        actionHref ? (
-          <Link href={content.actionHref}>
-            <Button variant="primary">{content.actionLabel}</Button>
-          </Link>
-        ) : onAction ? (
-          <Button variant="primary" onClick={onAction}>
-            {content.actionLabel}
-          </Button>
-        ) : null
+      {content.actionLabel && content.actionHref && (
+        <Link href={content.actionHref}>
+          <Button variant="primary">{content.actionLabel}</Button>
+        </Link>
+      )}
+      {content.actionLabel && onAction && !content.actionHref && (
+        <Button variant="primary" onClick={onAction}>
+          {content.actionLabel}
+        </Button>
       )}
     </div>
   );

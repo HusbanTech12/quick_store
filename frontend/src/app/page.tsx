@@ -1,34 +1,24 @@
-<<<<<<< HEAD
-import { productsAPI } from "@/lib/api";
-import HeroSection from "@/components/HeroSection";
-import FeaturedProducts from "@/components/FeaturedProducts";
-import CategoriesSection from "@/components/CategoriesSection";
-import TrustSection from "@/components/TrustSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import type { Product } from "@/types";
-=======
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Package, Headphones, Shirt, Home, Laptop, ChevronRight } from "lucide-react";
+import { ArrowRight, Package, Headphones, Shirt, Home as HomeIcon, Laptop, ChevronRight } from "lucide-react";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/Skeletons";
 import EmptyState from "@/components/EmptyState";
 import Button from "@/components/Button";
 import { productsAPI } from "@/lib/api";
->>>>>>> 1551b0ae5580588a9ce383fb80c7b9910c18be27
 
 const categoryIcons = {
   Electronics: Laptop,
   Fashion: Shirt,
-  "Home & Office": Home,
+  "Home & Office": HomeIcon,
   Accessories: Package,
   default: Package,
 };
 
-export default function Home() {
+export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -45,9 +35,9 @@ export default function Home() {
           productsAPI.getCategories(),
         ]);
 
-        setFeaturedProducts(featuredRes);
-        setRecentProducts(productsRes);
-        setCategories(categoriesRes);
+        setFeaturedProducts(featuredRes.data);
+        setRecentProducts(productsRes.data);
+        setCategories(categoriesRes.data);
         setError(null);
       } catch (err) {
         console.error("Failed to fetch homepage data:", err);
@@ -61,15 +51,6 @@ export default function Home() {
   }, []);
 
   return (
-<<<<<<< HEAD
-    <div>
-      <HeroSection />
-      <FeaturedProducts products={featuredProducts} />
-      <CategoriesSection categories={categories} />
-      <TrustSection />
-      <TestimonialsSection />
-    </div>
-=======
     <main className="min-h-screen">
       {/* Hero Section */}
       <Hero />
@@ -223,7 +204,7 @@ export default function Home() {
           backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
           backgroundSize: "32px 32px"
         }} />
-        
+
         <div className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center text-white">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
@@ -244,6 +225,5 @@ export default function Home() {
         </div>
       </section>
     </main>
->>>>>>> 1551b0ae5580588a9ce383fb80c7b9910c18be27
   );
 }

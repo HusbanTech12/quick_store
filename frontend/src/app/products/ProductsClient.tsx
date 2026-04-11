@@ -52,7 +52,10 @@ export default function ProductsClient() {
 
       const response = await productsAPI.getAll(params);
       setProducts(response.data);
-      setTotal(response.total);
+      const totalCount = response.headers["x-total-count"];
+      if (totalCount) {
+        setTotal(parseInt(totalCount, 10));
+      }
     } catch (error) {
       console.error("Failed to fetch products:", error);
     } finally {
