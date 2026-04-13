@@ -31,8 +31,8 @@ def get_products(
     min_price: Optional[float] = Query(None, ge=0),
     max_price: Optional[float] = Query(None, ge=0),
     search: Optional[str] = Query(None),
-    sort_by: str = Query("created_at", regex="^(created_at|price|title|stock)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("created_at", pattern="^(created_at|price|title|stock)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     featured_only: bool = Query(False)
 ):
     """Get all products with filtering and pagination"""
