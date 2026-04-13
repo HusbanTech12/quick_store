@@ -78,16 +78,18 @@ export default function Footer() {
       {/* Newsletter Section */}
       <div className="relative border-b border-slate-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 sm:p-12">
+          <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 p-8 sm:p-12 shadow-lg">
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:48px_48px]" />
+            <div className="absolute inset-0 bg-pattern-grid opacity-50 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-accent/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-brand/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative flex flex-col lg:flex-row items-center justify-between gap-8">
               <div className="text-center lg:text-left">
-                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                   Stay in the Loop
                 </h3>
-                <p className="text-white/80 max-w-md">
+                <p className="text-muted-foreground max-w-md">
                   Subscribe to our newsletter for exclusive deals, new arrivals, and insider updates.
                 </p>
               </div>
@@ -95,9 +97,9 @@ export default function Footer() {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 lg:w-80 px-5 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="flex-1 lg:w-80 px-5 py-4 bg-muted dark:bg-slate-700/50 border border-border rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand"
                 />
-                <button className="px-6 py-4 bg-white text-indigo-600 font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
+                <button className="px-6 py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 whitespace-nowrap bg-[length:200%_auto] animate-gradient">
                   Subscribe
                   <ArrowRight className="w-4 h-4" />
                 </button>
