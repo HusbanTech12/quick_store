@@ -20,7 +20,6 @@ const Button: FC<ButtonProps> = ({
   rightIcon,
   className = '',
   disabled,
-  children: _,
   ...props
 }) => {
   const baseClasses = 'btn-interactive inline-flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none relative overflow-hidden'

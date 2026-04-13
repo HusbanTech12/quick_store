@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { ordersAPI } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import type { Order } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const router = useRouter();
   const { user } = useAuthStore();
   const [order, setOrder] = useState<Order | null>(null);
@@ -16,21 +17,22 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
   useEffect(() => {
     if (!user) {
-      router.push("/login?redirect=/orders/" + params.id);
+      router.push("/login?redirect=/orders/" + resolvedParams.id);
       return;
     }
     const fetchOrder = async () => {
       try {
-        const response = await ordersAPI.getById(params.id);
+        const response = await ordersAPI.getById(resolvedParams.id);
         setOrder(response.data);
-      } catch (err: any) {
-        setError(err.response?.data?.detail || "Order not found");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Order not found";
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
     fetchOrder();
-  }, [user, router, params.id]);
+  }, [user, router, resolvedParams.id]);
 
   if (!user) return null;
   if (loading) return <LoadingSpinner />;

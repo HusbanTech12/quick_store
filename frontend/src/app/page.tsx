@@ -9,6 +9,7 @@ import { ProductCardSkeleton } from "@/components/Skeletons";
 import EmptyState from "@/components/EmptyState";
 import Button from "@/components/Button";
 import { productsAPI } from "@/lib/api";
+import type { Product } from "@/types";
 
 const categoryIcons = {
   Electronics: Laptop,
@@ -19,8 +20,8 @@ const categoryIcons = {
 };
 
 export default function HomePage() {
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-  const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,9 @@ export default function HomePage() {
         setCategories(categoriesRes.data);
         setError(null);
       } catch (err) {
-        console.error("Failed to fetch homepage data:", err);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to fetch homepage data:", err);
+        }
         setError("Failed to load content. Please try again later.");
       } finally {
         setLoading(false);

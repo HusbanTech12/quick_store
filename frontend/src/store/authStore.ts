@@ -34,8 +34,8 @@ export const useAuthStore = create<AuthState>()(
           const user = userResponse.data;
           set({ user, token: access_token, isLoading: false });
           return true;
-        } catch (error: any) {
-          const message = error.response?.data?.detail || "Login failed";
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Login failed";
           set({ error: message, isLoading: false });
           return false;
         }
@@ -49,8 +49,8 @@ export const useAuthStore = create<AuthState>()(
           // Auto login after register? Usually you might auto login or ask to login.
           set({ user, token: null, isLoading: false });
           return true;
-        } catch (error: any) {
-          const message = error.response?.data?.detail || "Registration failed";
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Registration failed";
           set({ error: message, isLoading: false });
           return false;
         }

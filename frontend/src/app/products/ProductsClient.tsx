@@ -7,13 +7,14 @@ import { ProductCardSkeleton } from "@/components/Skeletons";
 import EmptyState from "@/components/EmptyState";
 import Button from "@/components/Button";
 import { productsAPI } from "@/lib/api";
+import type { Product } from "@/types";
 import { Filter, SlidersHorizontal, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 export default function ProductsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  const [products, setProducts] = useState<any[]>([]);
+
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -37,13 +38,23 @@ export default function ProductsClient() {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const params: any = {
+      const params: {
+        skip: number;
+        limit: number;
+        sort_by: string;
+        sort_order: "asc" | "desc";
+        category?: string;
+        search?: string;
+        min_price?: number;
+        max_price?: number;
+        featured_only?: boolean;
+      } = {
         skip: (page - 1) * limit,
         limit,
         sort_by: sortBy,
         sort_order: sortOrder,
       };
-      
+
       if (category) params.category = category;
       if (search) params.search = search;
       if (minPrice) params.min_price = parseFloat(minPrice);
@@ -57,7 +68,9 @@ export default function ProductsClient() {
         setTotal(parseInt(totalCount, 10));
       }
     } catch (error) {
-      console.error("Failed to fetch products:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to fetch products:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -73,7 +86,9 @@ export default function ProductsClient() {
         const response = await productsAPI.getCategories();
         setCategories(response.data);
       } catch (error) {
-        console.error("Failed to fetch categories:", error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to fetch categories:", error);
+        }
       }
     }
     fetchCategories();

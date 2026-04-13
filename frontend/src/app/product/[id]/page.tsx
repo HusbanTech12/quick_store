@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "@/components/ToastProvider";
@@ -22,8 +22,9 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-export default function ProductDetail({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const { id } = resolvedParams;
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -52,8 +53,9 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
         setRelatedProducts(related);
 
         setError(null);
-      } catch (err: any) {
-        setError(err.response?.data?.detail || "Failed to load product");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load product";
+        setError(message);
       } finally {
         setLoading(false);
       }

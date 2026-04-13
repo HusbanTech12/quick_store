@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import Button from "./Button";
 

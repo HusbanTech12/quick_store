@@ -24,8 +24,9 @@ export default function OrdersPage() {
       try {
         const response = await ordersAPI.getAll(0, 20);
         setOrders(response.data);
-      } catch (err: any) {
-        setError(err.response?.data?.detail || "Failed to fetch orders");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to fetch orders";
+        setError(message);
       } finally {
         setLoading(false);
       }

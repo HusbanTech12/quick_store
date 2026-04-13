@@ -94,8 +94,9 @@ export default function CheckoutPage() {
       setTimeout(() => {
         router.push(`/orders/${response.data.id}`);
       }, 1000);
-    } catch (err: any) {
-      showError("Order failed", err.response?.data?.detail || "Failed to create order");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create order";
+      showError("Order failed", message);
     } finally {
       setLoading(false);
     }
