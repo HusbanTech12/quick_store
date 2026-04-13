@@ -41,7 +41,7 @@ export default function ProductsClient() {
       const params: {
         skip: number;
         limit: number;
-        sort_by: string;
+        sort_by: "created_at" | "price" | "title" | "stock";
         sort_order: "asc" | "desc";
         category?: string;
         search?: string;
@@ -51,7 +51,7 @@ export default function ProductsClient() {
       } = {
         skip: (page - 1) * limit,
         limit,
-        sort_by: sortBy,
+        sort_by: sortBy as "created_at" | "price" | "title" | "stock",
         sort_order: sortOrder,
       };
 
