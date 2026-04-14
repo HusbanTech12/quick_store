@@ -24,8 +24,14 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Prevent hydration mismatch by only showing cart count after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Focus search input when opened
   useEffect(() => {
@@ -147,10 +153,10 @@ export default function Header() {
             <Link
               href="/cart"
               className="relative p-2 hover:bg-muted rounded-lg transition-colors"
-              aria-label={`Shopping cart with ${cartItemCount} items`}
+              aria-label={`Shopping cart with ${isMounted ? cartItemCount : 0} items`}
             >
               <ShoppingCart className="w-5 h-5" />
-              {cartItemCount > 0 && (
+              {isMounted && cartItemCount > 0 && (
                 <span
                   className="absolute -top-1 -right-1 bg-error text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-scale-in"
                   aria-hidden="true"
@@ -208,7 +214,7 @@ export default function Header() {
             {/* Mobile Cart */}
             <Link href="/cart" className="relative p-2">
               <ShoppingCart className="w-5 h-5" />
-              {cartItemCount > 0 && (
+              {isMounted && cartItemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-error text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
                 </span>
