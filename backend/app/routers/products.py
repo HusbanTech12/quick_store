@@ -21,7 +21,7 @@ def require_admin(current_user: Annotated[schemas.UserResponse, Depends(get_curr
     return current_user
 
 
-@router.get("/", response_model=List[schemas.ProductResponse])
+@router.get("", response_model=List[schemas.ProductResponse])
 def get_products(
     response: Response,
     db: Annotated[Session, Depends(get_db)],
@@ -73,7 +73,7 @@ def get_product(
     return schemas.ProductResponse.model_validate(product)
 
 
-@router.post("/", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(
     product: schemas.ProductCreate,
     db: Annotated[Session, Depends(get_db)],
