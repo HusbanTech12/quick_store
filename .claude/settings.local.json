@@ -5,7 +5,9 @@
       "Bash(npx create-next-app@latest .)",
       "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --no-git --import-alias \"@/*\")",
       "Bash(npm install zustand axios)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(pip install *)",
+      "Bash(alembic revision *)"
     ]
   }
 }

@@ -4,135 +4,16 @@ from typing import List, Optional, Tuple
 from . import models, schemas
 import bcrypt
 import uuid
+import stripe
+import os
+from datetime import datetime
 
+# ... existing code ...
 
-def hash_password(password: str) -> str:
-    """Hash a password using bcrypt"""
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+# ========== Payment-Related CRUD ==========
 
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash"""
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-
-
-# ========== User CRUD ==========
-
-def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
-    return db.query(models.User).filter(models.User.email == email).first()
-
-
-def get_user(db: Session, user_id: uuid.UUID) -> Optional[models.User]:
-    return db.query(models.User).filter(models.User.id == user_id).first()
-
-
-def create_user(db: Session, user: schemas.UserCreate) -> models.User:
-    hashed_password = hash_password(user.password)
-    db_user = models.User(
-        email=user.email,
-        name=user.name,
-        hashed_password=hashed_password
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-
-# ========== Product CRUD ==========
-
-def get_product(db: Session, product_id: uuid.UUID) -> Optional[models.Product]:
-    return db.query(models.Product).filter(models.Product.id == product_id).first()
-
-
-def get_products(
-    db: Session,
-    skip: int = 0,
-    limit: int = 20,
-    category: Optional[str] = None,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
-    search: Optional[str] = None,
-    sort_by: str = "created_at",
-    sort_order: str = "desc",
-    featured_only: bool = False
-) -> Tuple[List[models.Product], int]:
-    query = db.query(models.Product)
-
-    if featured_only:
-        query = query.filter(models.Product.is_featured == True)
-
-    if category:
-        query = query.filter(models.Product.category == category)
-
-    if min_price is not None:
-        query = query.filter(models.Product.price >= min_price)
-
-    if max_price is not None:
-        query = query.filter(models.Product.price <= max_price)
-
-    if search:
-        query = query.filter(models.Product.title.ilike(f"%{search}%"))
-
-    # Sorting
-    sort_column = getattr(models.Product, sort_by, models.Product.created_at)
-    if sort_order == "desc":
-        query = query.order_by(desc(sort_column))
-    else:
-        query = query.order_by(asc(sort_column))
-
-    total = query.count()
-    products = query.offset(skip).limit(limit).all()
-
-    return products, total
-
-
-def get_categories(db: Session) -> List[str]:
-    categories = db.query(models.Product.category).distinct().all()
-    return [cat[0] for cat in categories]
-
-
-def create_product(db: Session, product: schemas.ProductCreate) -> models.Product:
-    db_product = models.Product(**product.model_dump())
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
-    return db_product
-
-
-def update_product(
-    db: Session,
-    product_id: uuid.UUID,
-    product_update: schemas.ProductUpdate
-) -> Optional[models.Product]:
-    db_product = get_product(db, product_id)
-    if not db_product:
-        return None
-
-    update_data = product_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_product, field, value)
-
-    db.commit()
-    db.refresh(db_product)
-    return db_product
-
-
-def delete_product(db: Session, product_id: uuid.UUID) -> bool:
-    db_product = get_product(db, product_id)
-    if not db_product:
-        return False
-
-    db.delete(db_product)
-    db.commit()
-    return True
-
-
-# ========== Order CRUD ==========
-
-def create_order(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid.UUID] = None) -> models.Order:
+def create_order_with_payment(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid.UUID] = None) -> models.Order:
+    # First create the order with 'pending' status
     total = 0.0
     order_items = []
 
@@ -151,16 +32,16 @@ def create_order(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid
             "price": price
         })
 
-    order_id = str(uuid.uuid4())
-
     db_order = models.Order(
-        id=uuid.UUID(order_id),
+        id=uuid.uuid4(),
         user_id=user_id,
         total_price=total,
         shipping_name=order.shipping_name,
         shipping_address=order.shipping_address,
         shipping_city=order.shipping_city,
-        shipping_email=order.shipping_email
+        shipping_email=order.shipping_email,
+        stripe_session_id=None,
+        payment_status="pending"
     )
     db.add(db_order)
     db.flush()
@@ -180,25 +61,18 @@ def create_order(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid
     db.refresh(db_order)
     return db_order
 
+def update_order_payment_status(db: Session, order_id: uuid.UUID, payment_status: str, stripe_session_id: Optional[str] = None):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise ValueError("Order not found")
 
-def get_orders(
-    db: Session,
-    skip: int = 0,
-    limit: int = 20,
-    user_id: Optional[uuid.UUID] = None
-) -> List[models.Order]:
-    query = db.query(models.Order)
+    order.payment_status = payment_status
+    if stripe_session_id:
+        order.stripe_session_id = stripe_session_id
 
-    if user_id:
-        query = query.filter(models.Order.user_id == user_id)
+    db.commit()
+    db.refresh(order)
+    return order
 
-    query = query.order_by(desc(models.Order.created_at))
-    return query.offset(skip).limit(limit).all()
-
-
-def get_order(db: Session, order_id: uuid.UUID) -> Optional[models.Order]:
-    return db.query(models.Order).filter(models.Order.id == order_id).first()
-
-
-def get_order_items(db: Session, order_id: uuid.UUID) -> List[models.OrderItem]:
-    return db.query(models.OrderItem).filter(models.OrderItem.order_id == order_id).all()
+def get_order_by_stripe_session(db: Session, stripe_session_id: str):
+    return db.query(models.Order).filter(models.Order.stripe_session_id == stripe_session_id).first()
