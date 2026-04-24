@@ -1,23 +1,24 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, Boolean, UniqueConstraint
-from sqlalchemy.schema import ForeignKeyConstraint
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, UniqueConstraint, Float
+from sqlalchemy.orm import relationship
+from .database import Base  # Import Base from database module
 
-# ... (existing model imports and class definitions) ...
-
+# Base class for all models
 class Order(Base):
-    __tablename__ = "orders"
+    __tablename__ = 'orders'
 
-    # ... (existing fields) ...
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    product_id = Column(Integer, ForeignKey('products.id'))
+    quantity = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)
+    created_at = Column(DateTime, server_default='CURRENT_TIMESTAMP')
+    updated_at = Column(DateTime, onupdate='CURRENT_TIMESTAMP')
 
-    stripe_session_id = Column(String, nullable=True)
-    payment_status = Column(String, nullable=True)  # 'pending', 'paid', 'failed'
-
-    # Add unique constraint for webhook event tracking
+    # Unique constraint
     __table_args__ = (
-        UniqueConstraint(
-            'stripe_session_id',
-            'webhook_event_id',
-            name='uq_order_payment'
-        ),
+        UniqueConstraint('user_id', 'product_id', name='uq_order_item'),
     )
 
-    # ... (existing methods if any) ...
+    # Relationships
+    user = relationship("User", back_populates="orders")
+    product = relationship("Product", back_populates="orders")

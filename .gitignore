@@ -51,3 +51,4 @@ backend/.env.*
 next-env.d.ts
 
 .venv/
+venv/
