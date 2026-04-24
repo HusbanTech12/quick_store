@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
 from .database import Base
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
