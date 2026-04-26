@@ -8,7 +8,9 @@
       "Bash(npm run build)",
       "Bash(pip install *)",
       "Bash(alembic revision *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(tee /tmp/build_output.txt)",
+      "Bash(npm install *)"
     ]
   }
 }

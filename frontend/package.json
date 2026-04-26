@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^9.3.1",
     "axios": "^1.7.9",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.474.0",
@@ -18,8 +19,8 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^20",
     "@types/react": "^19",
