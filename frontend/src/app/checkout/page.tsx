@@ -30,6 +30,9 @@ export default function CheckoutPage() {
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [stripePaymentMethod, setStripePaymentMethod] = useState<any>(null);
   const [stripeError, setStripeError] = useState<string | null>(null);
+  // Stripe instance and elements state
+  const [stripe, setStripe] = useState<any>(null);
+  const [stripeElements, setStripeElements] = useState<any>(null);
   const [formData, setFormData] = useState({
     shipping_name: user?.name || "",
     shipping_email: user?.email || "",
@@ -37,6 +40,9 @@ export default function CheckoutPage() {
     shipping_city: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Compute total upfront so it can be used in effects and rendering
+  const total = getTotal();
 
   useEffect(() => {
     if (!user) {
@@ -87,8 +93,6 @@ export default function CheckoutPage() {
       setStripeElements({ elements, card });
     });
   }, [stripeClientSecret]);
-
-  const total = getTotal(); // total calculated before effects
 
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
@@ -324,21 +328,27 @@ export default function CheckoutPage() {
                     disabled={!stripeClientSecret || isStripeLoading}
                     onClick={async () => {
                       if (!stripeClientSecret) return;
-                      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+                      const stripeInstance = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+                      if (!stripeInstance) {
+                        setStripeError('Unable to load Stripe');
+                        return;
+                      }
                       try {
-                        const { error } = await stripe.confirmCardPayment(stripeClientSecret, {
-                          payment_method: {
-                            card: (document.querySelector('#card-element') as any),
-                          },
-                          confirm_params: { return_url: window.location.href }
-                        });
+                        const { error } = await stripeInstance.confirmCardPayment(
+                          stripeClientSecret,
+                          {
+                            payment_method: {
+                              card: (document.querySelector('#card-element') as any),
+                            },
+                          }
+                        );
                         if (error) throw error;
                         setStripePaymentMethod({
                           payment_method: { type: 'card' },
                           payment_status: 'succeeded'
                         });
                         setCurrentStep(3);
-                      } catch (err:any) {
+                      } catch (err: any) {
                         setStripeError(err.message || 'Payment failed');
                       } finally {
                         setLoading(false);

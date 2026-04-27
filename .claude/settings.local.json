@@ -10,7 +10,8 @@
       "Bash(alembic revision *)",
       "Bash(python3 *)",
       "Bash(tee /tmp/build_output.txt)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npx tsc *)"
     ]
   }
 }
