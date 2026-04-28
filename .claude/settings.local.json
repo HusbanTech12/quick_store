@@ -11,7 +11,10 @@
       "Bash(python3 *)",
       "Bash(tee /tmp/build_output.txt)",
       "Bash(npm install *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(alembic current *)",
+      "Bash(alembic init *)",
+      "Bash(/mnt/c/Project/quick_store/backend/venv/bin/alembic *)"
     ]
   }
 }
