@@ -73,6 +73,26 @@ export const authAPI = {
   },
 };
 
+// ========== Users endpoints ==========
+
+export const usersAPI = {
+  getProfile: async (): Promise<AxiosResponse<User>> => {
+    return api.get<User>("/users/me");
+  },
+
+  updateProfile: async (
+    userData: { name?: string; email?: string }
+  ): Promise<AxiosResponse<User>> => {
+    return api.put<User>("/users/me", userData);
+  },
+
+  changePassword: async (
+    passwordData: { current_password: string; new_password: string }
+  ): Promise<AxiosResponse<{ message: string }>> => {
+    return api.post("/users/me/change-password", passwordData);
+  },
+};
+
 // ========== Products endpoints ==========
 
 export const productsAPI = {
@@ -134,6 +154,33 @@ export const ordersAPI = {
 
   getById: async (id: string): Promise<AxiosResponse<Order>> => {
     return api.get<Order>(`/orders/${id}`);
+  },
+};
+
+// ========== Stripe/Payment endpoints ==========
+
+export const stripeAPI = {
+  createPaymentIntent: async (
+    orderData: OrderCreate
+  ): Promise<AxiosResponse<{ clientSecret: string; orderId: string; amount: number }>> => {
+    return api.post("/stripe/create-payment-intent", {
+      order_data: orderData,
+      payment_method_types: ["card"],
+    });
+  },
+
+  confirmPayment: async (
+    paymentIntentId: string
+  ): Promise<AxiosResponse<{ status: string; orderId: string; message: string }>> => {
+    return api.post("/stripe/confirm-payment", null, {
+      params: { payment_intent_id: paymentIntentId },
+    });
+  },
+
+  getSessionStatus: async (
+    sessionId: string
+  ): Promise<AxiosResponse<{ payment_status: string; session: any }>> => {
+    return api.get(`/stripe/session-status/${sessionId}`);
   },
 };
 

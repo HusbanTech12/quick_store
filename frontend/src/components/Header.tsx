@@ -95,8 +95,26 @@ export default function Header() {
               Products
             </Link>
             {user && (
+              <>
+                <Link
+                  href="/orders"
+                  className="text-foreground hover:text-brand font-medium transition-colors"
+                >
+                  Orders
+                </Link>
+                {user.is_admin && (
+                  <Link
+                    href="/admin"
+                    className="text-foreground hover:text-brand font-medium transition-colors"
+                  >
+                    Admin
+                  </Link>
+                )}
+              </>
+            )}
+            {user && (
               <Link
-                href="/orders"
+                href="/profile"
                 className="text-foreground hover:text-brand font-medium transition-colors"
               >
                 Orders
@@ -183,15 +201,31 @@ export default function Header() {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-2 animate-scale-in">
                     <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    <Link
                       href="/orders"
                       className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       My Orders
                     </Link>
+                    {user.is_admin && (
+                      <Link
+                        href="/admin"
+                        className="block px-4 py-2 text-sm hover:bg-muted transition-colors border-t border-border"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-light transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-light transition-colors flex items-center gap-2 border-t border-border"
                     >
                       <LogOut className="w-4 h-4" />
                       Logout

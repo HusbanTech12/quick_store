@@ -10,7 +10,7 @@ from ..routers.auth import get_current_user
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
-@router.post("/", response_model=schemas.OrderResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=schemas.OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(
     order: schemas.OrderCreate,
     db: Annotated[Session, Depends(get_db)],
@@ -27,7 +27,7 @@ def create_order(
         )
 
 
-@router.get("/", response_model=List[schemas.OrderSummary])
+@router.get("", response_model=List[schemas.OrderSummary])
 def get_orders(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[schemas.UserResponse, Depends(get_current_user)],

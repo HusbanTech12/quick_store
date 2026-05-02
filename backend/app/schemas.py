@@ -25,6 +25,11 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
 
 
+class PasswordChange(BaseModel):
+    current_password: str = Field(..., min_length=6)
+    new_password: str = Field(..., min_length=6)
+
+
 class UserResponse(UserBase):
     id: uuid.UUID
     is_admin: bool
@@ -132,6 +137,8 @@ class OrderResponse(OrderBase):
     total_price: float
     created_at: datetime
     items: List[OrderItemNested] = []
+    payment_status: Optional[str] = "pending"
+    stripe_session_id: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -143,6 +150,7 @@ class OrderSummary(BaseModel):
     total_price: float
     created_at: datetime
     item_count: int
+    payment_status: Optional[str] = "pending"
 
     class Config:
         from_attributes = True

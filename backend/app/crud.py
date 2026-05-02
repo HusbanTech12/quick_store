@@ -1,8 +1,13 @@
 from sqlalchemy.orm import Session
+<<<<<<< HEAD
 from sqlalchemy import func, asc, desc
+=======
+from sqlalchemy import desc, asc, or_
+>>>>>>> daea38e (Stripe Integration Successfully)
 from typing import List, Optional, Tuple
 import bcrypt
 import uuid
+<<<<<<< HEAD
 from datetime import datetime
 
 from . import models, schemas
@@ -161,6 +166,186 @@ def get_order(db: Session, order_id: uuid.UUID) -> Optional[models.Order]:
 # -------------------- Payment‑related CRUD (existing) --------------------
 
 def create_order_with_payment(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid.UUID] = None) -> models.Order:
+=======
+
+
+# ========== User CRUD ==========
+
+def get_user(db: Session, user_id: uuid.UUID) -> Optional[models.User]:
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
+
+def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
+    return db.query(models.User).filter(models.User.email == email).first()
+
+
+def create_user(db: Session, user: schemas.UserCreate) -> models.User:
+    hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+    db_user = models.User(
+        id=uuid.uuid4(),
+        email=user.email,
+        name=user.name,
+        hashed_password=hashed_password.decode('utf-8'),
+        is_admin=False
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def update_user(db: Session, user_id: uuid.UUID, user_update: schemas.UserUpdate) -> Optional[models.User]:
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return None
+
+    if user_update.name is not None:
+        db_user.name = user_update.name
+    if user_update.email is not None:
+        db_user.email = user_update.email
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def update_user_password(db: Session, user_id: uuid.UUID, new_password: str) -> Optional[models.User]:
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return None
+
+    hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+    db_user.hashed_password = hashed_password.decode('utf-8')
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+
+# ========== Product CRUD ==========
+
+def get_product(db: Session, product_id: uuid.UUID) -> Optional[models.Product]:
+    return db.query(models.Product).filter(models.Product.id == product_id).first()
+
+
+def get_products(
+    db: Session,
+    skip: int = 0,
+    limit: int = 20,
+    category: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    search: Optional[str] = None,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+    featured_only: bool = False
+) -> Tuple[List[models.Product], int]:
+    query = db.query(models.Product)
+
+    # Apply filters
+    if category:
+        query = query.filter(models.Product.category == category)
+    if min_price is not None:
+        query = query.filter(models.Product.price >= min_price)
+    if max_price is not None:
+        query = query.filter(models.Product.price <= max_price)
+    if search:
+        query = query.filter(
+            or_(
+                models.Product.title.ilike(f"%{search}%"),
+                models.Product.description.ilike(f"%{search}%")
+            )
+        )
+    if featured_only:
+        query = query.filter(models.Product.is_featured == True)
+
+    # Get total count before pagination
+    total = query.count()
+
+    # Apply sorting
+    sort_column = getattr(models.Product, sort_by, models.Product.created_at)
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+
+    # Apply pagination
+    products = query.offset(skip).limit(limit).all()
+
+    return products, total
+
+
+def get_categories(db: Session) -> List[str]:
+    categories = db.query(models.Product.category).distinct().all()
+    return [cat[0] for cat in categories]
+
+
+def create_product(db: Session, product: schemas.ProductCreate) -> models.Product:
+    db_product = models.Product(
+        id=uuid.uuid4(),
+        **product.model_dump()
+    )
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+
+def update_product(
+    db: Session,
+    product_id: uuid.UUID,
+    product_update: schemas.ProductUpdate
+) -> Optional[models.Product]:
+    db_product = get_product(db, product_id)
+    if not db_product:
+        return None
+
+    update_data = product_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_product, field, value)
+
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+
+def delete_product(db: Session, product_id: uuid.UUID) -> bool:
+    db_product = get_product(db, product_id)
+    if not db_product:
+        return False
+
+    db.delete(db_product)
+    db.commit()
+    return True
+
+
+# ========== Order CRUD ==========
+
+def get_order(db: Session, order_id: uuid.UUID) -> Optional[models.Order]:
+    return db.query(models.Order).filter(models.Order.id == order_id).first()
+
+
+def get_orders(
+    db: Session,
+    skip: int = 0,
+    limit: int = 20,
+    user_id: Optional[uuid.UUID] = None
+) -> List[models.Order]:
+    query = db.query(models.Order)
+
+    if user_id:
+        query = query.filter(models.Order.user_id == user_id)
+
+    return query.order_by(desc(models.Order.created_at)).offset(skip).limit(limit).all()
+
+
+def create_order(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid.UUID] = None) -> models.Order:
+    # Calculate total and validate stock
+>>>>>>> daea38e (Stripe Integration Successfully)
     total = 0.0
     order_items = []
     for item in order.items:
@@ -173,6 +358,7 @@ def create_order_with_payment(db: Session, order: schemas.OrderCreate, user_id: 
         total += price * item.quantity
         order_items.append({"product_id": item.product_id, "quantity": item.quantity, "price": price})
 
+    # Create order
     db_order = models.Order(
         id=uuid.uuid4(),
         user_id=user_id,
@@ -181,12 +367,22 @@ def create_order_with_payment(db: Session, order: schemas.OrderCreate, user_id: 
         shipping_address=order.shipping_address,
         shipping_city=order.shipping_city,
         shipping_email=order.shipping_email,
+<<<<<<< HEAD
         stripe_session_id=None,
         payment_status="pending",
     )
     db.add(db_order)
     db.flush()
     for itm in order_items:
+=======
+        payment_status="pending"
+    )
+    db.add(db_order)
+    db.flush()
+
+    # Create order items and reduce stock
+    for item_data in order_items:
+>>>>>>> daea38e (Stripe Integration Successfully)
         db_item = models.OrderItem(
             id=uuid.uuid4(),
             order_id=db_order.id,
@@ -203,8 +399,20 @@ def create_order_with_payment(db: Session, order: schemas.OrderCreate, user_id: 
     return db_order
 
 
+<<<<<<< HEAD
 def update_order_payment_status(db: Session, order_id: uuid.UUID, payment_status: str, stripe_session_id: Optional[str] = None):
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
+=======
+# ========== Payment-Related CRUD ==========
+
+def update_order_payment_status(
+    db: Session,
+    order_id: uuid.UUID,
+    payment_status: str,
+    stripe_session_id: Optional[str] = None
+) -> models.Order:
+    order = get_order(db, order_id)
+>>>>>>> daea38e (Stripe Integration Successfully)
     if not order:
         raise ValueError("Order not found")
     order.payment_status = payment_status
@@ -215,5 +423,9 @@ def update_order_payment_status(db: Session, order_id: uuid.UUID, payment_status
     return order
 
 
+<<<<<<< HEAD
 def get_order_by_stripe_session(db: Session, stripe_session_id: str):
+=======
+def get_order_by_stripe_session(db: Session, stripe_session_id: str) -> Optional[models.Order]:
+>>>>>>> daea38e (Stripe Integration Successfully)
     return db.query(models.Order).filter(models.Order.stripe_session_id == stripe_session_id).first()

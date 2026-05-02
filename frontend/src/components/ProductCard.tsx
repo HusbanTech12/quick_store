@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ShoppingCart, Star, Heart, ImageOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Product } from "@/types";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "./ToastProvider";
@@ -15,6 +16,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, index = 0, variant = "default" }: ProductCardProps) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
@@ -31,7 +33,11 @@ export default function ProductCard({ product, index = 0, variant = "default" }:
     addItem(product);
     success("Added to cart", product.title);
 
-    setTimeout(() => setIsAdding(false), 300);
+    // Redirect to cart page after adding item
+    setTimeout(() => {
+      setIsAdding(false);
+      router.push("/cart");
+    }, 500);
   };
 
   // Generate a random rating between 4.0 and 5.0 for demo

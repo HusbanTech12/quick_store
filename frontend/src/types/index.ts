@@ -96,6 +96,8 @@ export interface Order {
   shipping_address: string;
   shipping_city: string;
   shipping_email: string;
+  payment_status?: string;
+  stripe_session_id?: string;
 }
 
 export interface OrderSummary {
@@ -104,6 +106,7 @@ export interface OrderSummary {
   total_price: number;
   created_at: string;
   item_count: number;
+  payment_status?: string;
 }
 
 // API response wrappers

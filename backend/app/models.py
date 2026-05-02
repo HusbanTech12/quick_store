@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import uuid
 
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, Text, Boolean, UniqueConstraint
@@ -35,6 +36,47 @@ class Product(Base):
 
     # Relationship to order items
     order_items = relationship("OrderItem", back_populates="product", cascade="all, delete-orphan")
+=======
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, Boolean, Text
+from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from datetime import datetime
+import uuid
+
+from .database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(100), nullable=False)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    hashed_password = Column("password", String(255), nullable=False)
+    is_admin = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Relationships
+    orders = relationship("Order", back_populates="user")
+
+
+class Product(Base):
+    __tablename__ = "products"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Float, nullable=False)
+    category = Column(String(100), nullable=False, index=True)
+    image = Column(String(500), nullable=True)
+    stock = Column(Integer, nullable=False, default=0)
+    is_featured = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Relationships
+    order_items = relationship("OrderItem", back_populates="product")
+
+>>>>>>> daea38e (Stripe Integration Successfully)
 
 class Order(Base):
     __tablename__ = "orders"
@@ -46,6 +88,7 @@ class Order(Base):
     shipping_address = Column(Text, nullable=False)
     shipping_city = Column(String(100), nullable=False)
     shipping_email = Column(String(255), nullable=False)
+<<<<<<< HEAD
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     stripe_session_id = Column(String, nullable=True)
     payment_status = Column(String, nullable=True)  # 'pending', 'paid', 'failed'
@@ -58,6 +101,18 @@ class Order(Base):
     # Relationships
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+=======
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Stripe payment fields
+    stripe_session_id = Column(String(255), nullable=True, unique=True)
+    payment_status = Column(String(50), nullable=True, default="pending")  # pending, paid, failed
+
+    # Relationships
+    user = relationship("User", back_populates="orders")
+    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+
+>>>>>>> daea38e (Stripe Integration Successfully)
 
 class OrderItem(Base):
     __tablename__ = "order_items"
