@@ -9,12 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@stripe/stripe-js": "^9.3.1",
-=======
     "@stripe/react-stripe-js": "^2.9.0",
     "@stripe/stripe-js": "^4.10.0",
->>>>>>> daea38e (Stripe Integration Successfully)
     "axios": "^1.7.9",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.474.0",

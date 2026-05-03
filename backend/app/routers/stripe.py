@@ -4,11 +4,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, Optional
 import stripe
 import os
-<<<<<<< HEAD
 from datetime import datetime, timedelta
-from .. import schemas, crud
-=======
->>>>>>> daea38e (Stripe Integration Successfully)
 import uuid
 
 from .. import schemas, crud
@@ -233,39 +229,11 @@ async def create_checkout_session(
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 
-@router.post("/create-payment-intent")
-async def create_payment_intent(
-    request: dict,  # Accept arbitrary JSON with amount
-    db: Session = Depends(crud.get_db),
-    current_user: schemas.UserResponse = Depends(crud.get_current_user)
-):
-    amount = request.get("amount")
-    if not amount or amount <= 0:
-        raise HTTPException(status_code=400, detail="Invalid amount")
-
-    try:
-        intent = stripe.PaymentIntent.create(
-            amount=int(amount),  # amount in cents
-            currency="usd",
-            payment_method_types=["card"],
-            metadata={
-                "user_id": str(current_user.id),
-                "order_id": str(uuid.uuid4())
-            }
-        )
-        return {"client_secret": intent.client_secret}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
-
 @router.post("/webhook")
 async def stripe_webhook(
     request: Request,
-<<<<<<< HEAD
-    stripe_signature: str = Header(None, alias="stripe-signature")
-=======
     stripe_signature: str = Header(None, alias="stripe-signature"),
     db: Session = Depends(get_db)
->>>>>>> daea38e (Stripe Integration Successfully)
 ):
     """
     Handle Stripe webhook events.

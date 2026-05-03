@@ -9,14 +9,9 @@ import { stripeAPI } from "@/lib/api";
 import CheckoutStepper from "@/components/CheckoutStepper";
 import Button from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
-<<<<<<< HEAD
-import { Check, CreditCard, MapPin, Package, Loader2 } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
-=======
 import StripeProvider from "@/components/StripeProvider";
 import PaymentForm from "@/components/PaymentForm";
 import { Check, MapPin, CreditCard, Package } from "lucide-react";
->>>>>>> daea38e (Stripe Integration Successfully)
 
 const checkoutSteps = [
   { number: 1, title: "Shipping", description: "Delivery details" },
@@ -31,19 +26,8 @@ export default function CheckoutPage() {
   const { success, error: showError } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
-  // Stripe state
-  const [isStripeLoading, setIsStripeLoading] = useState(false);
-  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
-  const [stripePaymentMethod, setStripePaymentMethod] = useState<any>(null);
-  const [stripeError, setStripeError] = useState<string | null>(null);
-  // Stripe instance and elements state
-  const [stripe, setStripe] = useState<any>(null);
-  const [stripeElements, setStripeElements] = useState<any>(null);
-=======
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
->>>>>>> daea38e (Stripe Integration Successfully)
   const [formData, setFormData] = useState({
     shipping_name: user?.name || "",
     shipping_email: user?.email || "",
@@ -61,50 +45,6 @@ export default function CheckoutPage() {
     }
   }, [user, router]);
 
-  // Initialize Stripe PaymentIntent when entering Payment step
-  useEffect(() => {
-    if (currentStep === 2) {
-      setIsStripeLoading(true);
-      setStripeError(null);
-      setStripeClientSecret(null);
-      setStripePaymentMethod(null);
-
-      // Create PaymentIntent on backend
-      fetch('/api/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: Math.round(total * 100) }) // Convert to cents
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) throw new Error(data.error);
-          setStripeClientSecret(data.client_secret);
-        })
-        .catch(err => {
-          console.error('Stripe init error:', err);
-          setStripeError('Failed to initialize payment. Please try again.');
-        })
-        .finally(() => setIsStripeLoading(false));
-    }
-  }, [currentStep, total]);
-
-  // Load Stripe library and mount card element when client secret is ready
-  useEffect(() => {
-    if (!stripeClientSecret) return;
-    // Load Stripe instance
-    loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!).then((stripeInstance) => {
-      if (!stripeInstance) {
-        setStripeError('Unable to load Stripe');
-        return;
-      }
-      const elements = stripeInstance.elements();
-      const card = elements.create('card');
-      card.mount('#card-element');
-      setStripe(stripeInstance);
-      setStripeElements({ elements, card });
-    });
-  }, [stripeClientSecret]);
-
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
     if (!formData.shipping_name.trim()) errors.shipping_name = "Name is required";
@@ -121,10 +61,8 @@ export default function CheckoutPage() {
   const handleNext = async () => {
     if (currentStep === 1) {
       if (!validateStep1()) return;
-      // Create payment intent when moving from step 1 to step 2
       await createPaymentIntent();
     } else if (currentStep === 2) {
-      // Payment is handled by PaymentForm component
       setCurrentStep(3);
     }
   };
@@ -141,19 +79,13 @@ export default function CheckoutPage() {
         })),
       };
 
-      console.log('Creating payment intent with order data:', orderData);
       const response = await stripeAPI.createPaymentIntent(orderData);
-      console.log('Payment intent response:', response.data);
-
       setClientSecret(response.data.clientSecret);
       setOrderId(response.data.orderId);
       setCurrentStep(2);
     } catch (err: any) {
-      console.error('Payment intent error:', err);
-      console.error('Error response:', err?.response?.data);
       const message = err?.response?.data?.detail || "Failed to initialize payment";
       showError("Payment initialization failed", message);
-      // Stay on step 1 if payment intent creation fails
       setCurrentStep(1);
     } finally {
       setLoading(false);
@@ -204,7 +136,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12 max-w-6xl">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
           Checkout
@@ -214,16 +145,13 @@ export default function CheckoutPage() {
         </p>
       </div>
 
-      {/* Stepper */}
       <CheckoutStepper
         steps={checkoutSteps}
         currentStep={currentStep}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
         <div className="lg:col-span-2">
-          {/* Step 1: Shipping */}
           {currentStep === 1 && (
             <div className="bg-card border border-border rounded-xl shadow-sm p-6 animate-scale-in">
               <div className="flex items-center gap-3 mb-6">
@@ -233,122 +161,7 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-bold">Shipping Information</h2>
               </div>
 
-<<<<<<< HEAD
-            {/* Stripe Payment Integration */}
-            {currentStep === 2 && (
-              <div className="bg-card border border-border rounded-xl shadow-sm p-6 animate-scale-in">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-accent-light rounded-lg">
-                    <CreditCard className="w-6 h-6 text-accent" />
-                  </div>
-                  <h2 className="text-xl font-bold">Payment Method</h2>
-                </div>
-
-                {/* Stripe Elements Container */}
-                <div className="space-y-4">
-                  {/* Loading State */}
-                  {isStripeLoading && (
-                    <div className="flex items-center justify-center py-6">
-                      <Loader2 className="animate-spin w-6 h-6 text-muted-foreground" />
-                      <span className="ml-2 text-sm text-muted-foreground">Loading payment form...</span>
-                    </div>
-                  )}
-
-                  {/* Error Display */}
-                  {stripeError && (
-                    <div className="text-sm text-error bg-error/10 border border-error rounded p-3">
-                      {stripeError}
-                    </div>
-                  )}
-
-                  {/* Stripe Card Element */}
-                  <div id="card-element" className="border border-border rounded p-4 bg-background" />
-
-                  {/* Pay Button */}
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    disabled={!stripeClientSecret || isStripeLoading}
-                    onClick={async () => {
-                      if (!stripeClientSecret) return;
-                      const stripeInstance = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
-                      if (!stripeInstance) {
-                        setStripeError('Unable to load Stripe');
-                        return;
-                      }
-                      try {
-                        const { error } = await stripeInstance.confirmCardPayment(
-                          stripeClientSecret,
-                          {
-                            payment_method: {
-                              card: (document.querySelector('#card-element') as any),
-                            },
-                          }
-                        );
-                        if (error) throw error;
-                        setStripePaymentMethod({
-                          payment_method: { type: 'card' },
-                          payment_status: 'succeeded'
-                        });
-                        setCurrentStep(3);
-                      } catch (err: any) {
-                        setStripeError(err.message || 'Payment failed');
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
-                  >
-                    Pay ${total.toFixed(2)}
-                  </Button>
-                </div>
-
-                {/* Error Message */}
-                {stripeError && (
-                  <div className="text-sm text-error bg-error/10 border border-error rounded p-3">
-                    {stripeError}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Step 3: Review */}
-            {currentStep === 3 && (
-              <div className="bg-card border border-border rounded-xl shadow-sm p-6 animate-scale-in">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-success-light rounded-lg">
-                    <Package className="w-6 h-6 text-success" />
-                  </div>
-                  <h2 className="text-xl font-bold">Review Your Order</h2>
-                </div>
-
-                {/* Payment Details */}
-                {stripePaymentMethod && (
-                  <div className="mb-6 pb-6 border-b border-border">
-                    <h3 className="font-semibold mb-3">Payment Method</h3>
-                    <div className="text-sm text-muted-foreground">
-                      <p>Credit Card (ending in •••• •••• •••• {stripePaymentMethod.card?.last4 || '1234'})</p>
-                      <p className="text-success">✓ Payment Successful</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Shipping Details */}
-                <div className="mb-6 pb-6 border-b border-border">
-                  <h3 className="font-semibold mb-3">Shipping Address</h3>
-                  <div className="text-sm text-muted-foreground">
-                    <p>{formData.shipping_name}</p>
-                    <p>{formData.shipping_email}</p>
-                    <p>{formData.shipping_address}</p>
-                    <p>{formData.shipping_city}</p>
-                  </div>
-                </div>
-
-                {/* Order Items */}
-=======
               <div className="space-y-5">
->>>>>>> daea38e (Stripe Integration Successfully)
                 <div>
                   <label htmlFor="shipping_name" className="block text-sm font-medium mb-2">
                     Full Name *
@@ -437,14 +250,14 @@ export default function CheckoutPage() {
                   onClick={handleNext}
                   fullWidth
                   rightIcon={<Check className="w-4 h-4" />}
+                  disabled={loading}
                 >
-                  Continue to Payment
+                  {loading ? "Processing..." : "Continue to Payment"}
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 2: Payment */}
           {currentStep === 2 && (
             <div className="bg-card border border-border rounded-xl shadow-sm p-6 animate-scale-in">
               {clientSecret ? (
@@ -476,7 +289,6 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Order Summary Sidebar */}
         <div className="lg:col-span-1">
           <div className="bg-card border border-border rounded-xl shadow-sm p-6 sticky top-24">
             <h2 className="text-lg font-bold mb-4">Order Summary</h2>
