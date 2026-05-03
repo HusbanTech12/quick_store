@@ -8,13 +8,6 @@
       "Bash(npm run build)",
       "Bash(pip install *)",
       "Bash(alembic revision *)",
-      "Bash(python3 *)",
-      "Bash(tee /tmp/build_output.txt)",
-      "Bash(npm install *)",
-      "Bash(npx tsc *)",
-      "Bash(alembic current *)",
-      "Bash(alembic init *)",
-      "Bash(/mnt/c/Project/quick_store/backend/venv/bin/alembic *)",
       "Bash(python -m alembic revision -m \"add_stripe_payment_fields\")",
       "Bash(cat)",
       "Read(//tmp/**)",
@@ -24,8 +17,18 @@
       "Read(/mnt/d/Projects/quick_store/frontend/.env*)",
       "Bash(cat /mnt/d/Projects/quick_store/backend/.env*)",
       "Bash(cat /mnt/d/Projects/quick_store/frontend/.env*)",
+      "Bash(npm install *)",
+      "Bash(python3 *)",
       "Bash(uvicorn app.main:app --reload --host 0.0.0.0 --port 8000)",
-      "Bash(kill -9 6289)"
+      "Bash(kill -9 6289)",
+      "Bash(python3 *)",
+      "Bash(tee /tmp/build_output.txt)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(alembic current *)",
+      "Bash(alembic init *)",
+      "Bash(/mnt/c/Project/quick_store/backend/venv/bin/alembic *)"
+
     ]
   }
 }

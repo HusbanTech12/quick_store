@@ -6,19 +6,19 @@ Add these environment variables in your Render dashboard:
 
 ### Database
 ```
-DATABASE_URL=YOUR_DATABASE_URL
+DATABASE_URL=YOUR_NEON_DATABASE_URL
 ```
 
 ### Authentication
 ```
-SECRET_KEY=YOUR_SECRET_KEY
+SECRET_KEY=YOUR_SECRET_KEY_HERE
 ```
 Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
 
 ### Stripe Payment (REQUIRED - causing 500 error)
 ```
 STRIPE_SECRET_KEY=YOUR_STRIPE_SECRET_KEY
-STRIPE_WEBHOOK_SECRET=YOUR_STRIPE_WEBHOOK_SECRET
+STRIPE_WEBHOOK_SECRET=WEBHOOK_SECRET
 ```
 Get from: https://dashboard.stripe.com/test/apikeys
 
