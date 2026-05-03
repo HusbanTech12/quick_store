@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/components/ToastProvider";
 import Link from "next/link";
 import AuthFormInput from "@/components/auth/AuthFormInput";
 import PasswordVisibilityToggle from "@/components/auth/PasswordVisibilityToggle";
@@ -18,6 +19,7 @@ export default function LoginForm() {
   const isLoading = useAuthStore((state) => state.isLoading);
   const error = useAuthStore((state) => state.error);
   const clearError = useAuthStore((state) => state.clearError);
+  const { success: showSuccess, error: showError } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,8 +44,14 @@ export default function LoginForm() {
     e.preventDefault();
     setFieldErrors({});
     if (!validate()) return;
+
     const success = await login(email, password);
-    if (success) router.push(redirect);
+    if (success) {
+      showSuccess("Login Successful!", "Welcome back to QuickStore");
+      router.push(redirect);
+    } else {
+      showError("Login Failed", error || "Invalid email or password");
+    }
   };
 
   return (

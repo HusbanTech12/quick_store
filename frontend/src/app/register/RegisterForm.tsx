@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, User, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/components/ToastProvider";
 import Link from "next/link";
 import AuthFormInput from "@/components/auth/AuthFormInput";
 import PasswordVisibilityToggle from "@/components/auth/PasswordVisibilityToggle";
@@ -24,6 +25,7 @@ export default function RegisterForm() {
   const isLoading = useAuthStore((state) => state.isLoading);
   const error = useAuthStore((state) => state.error);
   const clearError = useAuthStore((state) => state.clearError);
+  const { success: showSuccess, error: showError } = useToast();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -64,10 +66,14 @@ export default function RegisterForm() {
     e.preventDefault();
     setFieldErrors({});
     if (!validate()) return;
+
     const success = await register({ email, name, password });
     if (success) {
       setIsSuccess(true);
+      showSuccess("Account Created!", "Welcome to QuickStore! Redirecting you...");
       setTimeout(() => router.push("/"), 1500);
+    } else {
+      showError("Registration Failed", error || "Unable to create account. Please try again.");
     }
   };
 
