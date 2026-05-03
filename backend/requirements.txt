@@ -9,9 +9,5 @@ python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.17
 email-validator>=2.2.0
-<<<<<<< HEAD
 stripe>=10.0.0
-=======
-stripe>=7.0.0
 python-dotenv>=1.0.0
->>>>>>> daea38e (Stripe Integration Successfully)
