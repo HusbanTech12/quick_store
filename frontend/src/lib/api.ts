@@ -91,6 +91,25 @@ export const usersAPI = {
   ): Promise<AxiosResponse<{ message: string }>> => {
     return api.post("/users/me/change-password", passwordData);
   },
+
+  // Admin endpoints
+  getAllUsers: async (
+    skip?: number,
+    limit?: number
+  ): Promise<AxiosResponse<User[]>> => {
+    return api.get<User[]>("/users", { params: { skip, limit } });
+  },
+
+  updateUserRole: async (
+    userId: string,
+    is_admin: boolean
+  ): Promise<AxiosResponse<User>> => {
+    return api.put<User>(`/users/${userId}/role`, null, { params: { is_admin } });
+  },
+
+  deleteUser: async (userId: string): Promise<void> => {
+    return api.delete(`/users/${userId}`);
+  },
 };
 
 // ========== Products endpoints ==========
@@ -154,6 +173,21 @@ export const ordersAPI = {
 
   getById: async (id: string): Promise<AxiosResponse<Order>> => {
     return api.get<Order>(`/orders/${id}`);
+  },
+
+  updateStatus: async (
+    id: string,
+    order_status: string
+  ): Promise<AxiosResponse<Order>> => {
+    return api.patch<Order>(`/orders/${id}/status`, { order_status });
+  },
+
+  // Admin endpoints
+  getAllAdmin: async (
+    skip?: number,
+    limit?: number
+  ): Promise<AxiosResponse<OrderSummary[]>> => {
+    return api.get<OrderSummary[]>("/orders/admin/all", { params: { skip, limit } });
   },
 };
 

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import uuid
@@ -8,6 +8,16 @@ from ..database import get_db
 from ..routers.auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+def require_admin(current_user: Annotated[schemas.UserResponse, Depends(get_current_user)]):
+    """Check if current user is an admin"""
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
+    return current_user
 
 
 @router.get("/me", response_model=schemas.UserResponse)
@@ -93,3 +103,62 @@ def get_user_by_id(
             detail="User not found"
         )
     return schemas.UserResponse.model_validate(user)
+
+
+@router.get("", response_model=List[schemas.UserResponse])
+def get_all_users(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[schemas.UserResponse, Depends(require_admin)],
+    skip: int = 0,
+    limit: int = 100
+):
+    """Get all users (Admin only)"""
+    users = crud.get_all_users(db, skip=skip, limit=limit)
+    return [schemas.UserResponse.model_validate(u) for u in users]
+
+
+@router.put("/{user_id}/role", response_model=schemas.UserResponse)
+def update_user_role(
+    user_id: uuid.UUID,
+    is_admin: bool,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[schemas.UserResponse, Depends(require_admin)]
+):
+    """Update user role (Admin only)"""
+    # Prevent admin from removing their own admin status
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot modify your own admin status"
+        )
+
+    user = crud.update_user_role(db, user_id, is_admin)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return schemas.UserResponse.model_validate(user)
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: uuid.UUID,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[schemas.UserResponse, Depends(require_admin)]
+):
+    """Delete user (Admin only)"""
+    # Prevent admin from deleting themselves
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete your own account"
+        )
+
+    success = crud.delete_user(db, user_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return None

@@ -81,6 +81,57 @@ def change_user_password(db: Session, user: models.User, new_password: str) -> m
     db.refresh(user)
     return user
 
+
+def get_all_users(db: Session, skip: int = 0, limit: int = 100) -> List[models.User]:
+    """Get all users (admin only)."""
+    return db.query(models.User).offset(skip).limit(limit).all()
+
+
+def update_user(db: Session, user_id: uuid.UUID, user_update: schemas.UserUpdate) -> Optional[models.User]:
+    """Update user profile."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return None
+
+    for field, value in user_update.model_dump(exclude_unset=True).items():
+        setattr(user, field, value)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def update_user_password(db: Session, user_id: uuid.UUID, new_password: str) -> Optional[models.User]:
+    """Update user password."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return None
+
+    hashed = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt())
+    user.hashed_password = hashed.decode("utf-8")
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def update_user_role(db: Session, user_id: uuid.UUID, is_admin: bool) -> Optional[models.User]:
+    """Update user admin role (admin only)."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return None
+
+    user.is_admin = is_admin
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def delete_user(db: Session, user_id: uuid.UUID) -> bool:
+    """Delete user (admin only)."""
+    result = db.query(models.User).filter(models.User.id == user_id).delete()
+    db.commit()
+    return bool(result)
+
 # -------------------- Product CRUD --------------------
 
 def get_products(

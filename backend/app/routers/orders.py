@@ -10,6 +10,16 @@ from ..routers.auth import get_current_user
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
+def require_admin(current_user: Annotated[schemas.UserResponse, Depends(get_current_user)]):
+    """Check if current user is an admin"""
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
+    return current_user
+
+
 @router.post("", response_model=schemas.OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(
     order: schemas.OrderCreate,
@@ -114,3 +124,26 @@ def update_order_status(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+
+@router.get("/admin/all", response_model=List[schemas.OrderSummary])
+def get_all_orders_admin(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[schemas.UserResponse, Depends(require_admin)],
+    skip: int = 0,
+    limit: int = 50
+):
+    """Get all orders (Admin only)"""
+    orders = crud.get_orders(db, skip=skip, limit=limit, user_id=None)
+    return [
+        schemas.OrderSummary(
+            id=o.id,
+            user_id=o.user_id,
+            total_price=o.total_price,
+            created_at=o.created_at,
+            item_count=len(o.items),
+            payment_status=o.payment_status,
+            order_status=o.order_status
+        )
+        for o in orders
+    ]

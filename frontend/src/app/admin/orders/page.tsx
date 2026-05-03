@@ -8,6 +8,8 @@ import { ordersAPI } from "@/lib/api";
 import type { OrderSummary } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
+import AuthGuard from "@/components/AuthGuard";
+import AdminLayout from "@/components/AdminLayout";
 import {
   ShoppingBag,
   Search,
@@ -18,7 +20,7 @@ import {
   Filter,
 } from "lucide-react";
 
-export default function AdminOrdersPage() {
+function AdminOrdersContent() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { error: showError } = useToast();
@@ -28,21 +30,12 @@ export default function AdminOrdersPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   useEffect(() => {
-    if (!user) {
-      router.push("/login?redirect=/admin/orders");
-      return;
-    }
-    if (!user.is_admin) {
-      router.push("/");
-      return;
-    }
-
     fetchOrders();
-  }, [user, router]);
+  }, []);
 
   const fetchOrders = async () => {
     try {
-      const response = await ordersAPI.getAll(0, 100);
+      const response = await ordersAPI.getAllAdmin(0, 100);
       setOrders(response.data);
     } catch (err) {
       showError("Failed to load orders", "Please try again");
@@ -242,5 +235,15 @@ export default function AdminOrdersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <AuthGuard requireAuth requireAdmin>
+      <AdminLayout>
+        <AdminOrdersContent />
+      </AdminLayout>
+    </AuthGuard>
   );
 }

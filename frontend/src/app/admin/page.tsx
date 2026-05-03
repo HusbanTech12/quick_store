@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Button from "@/components/Button";
 import AuthGuard from "@/components/AuthGuard";
+import AdminLayout from "@/components/AdminLayout";
 import {
   LayoutDashboard,
   Package,
@@ -161,7 +162,9 @@ function AdminDashboardContent() {
 export default function AdminDashboardPage() {
   return (
     <AuthGuard requireAuth requireAdmin>
-      <AdminDashboardContent />
+      <AdminLayout>
+        <AdminDashboardContent />
+      </AdminLayout>
     </AuthGuard>
   );
 }

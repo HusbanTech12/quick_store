@@ -8,6 +8,8 @@ import { productsAPI } from "@/lib/api";
 import type { Product } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
+import AuthGuard from "@/components/AuthGuard";
+import AdminLayout from "@/components/AdminLayout";
 import {
   Package,
   Plus,
@@ -19,7 +21,7 @@ import {
   Box,
 } from "lucide-react";
 
-export default function AdminProductsPage() {
+function AdminProductsContent() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { success, error: showError } = useToast();
@@ -31,18 +33,9 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!user) {
-      router.push("/login?redirect=/admin/products");
-      return;
-    }
-    if (!user.is_admin) {
-      router.push("/");
-      return;
-    }
-
     fetchProducts();
     fetchCategories();
-  }, [user, router]);
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -283,5 +276,15 @@ export default function AdminProductsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminProductsPage() {
+  return (
+    <AuthGuard requireAuth requireAdmin>
+      <AdminLayout>
+        <AdminProductsContent />
+      </AdminLayout>
+    </AuthGuard>
   );
 }
