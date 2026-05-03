@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
@@ -11,6 +11,7 @@ import Button from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
 import StripeProvider from "@/components/StripeProvider";
 import PaymentForm from "@/components/PaymentForm";
+import AuthGuard from "@/components/AuthGuard";
 import { Check, MapPin, CreditCard, Package } from "lucide-react";
 
 const checkoutSteps = [
@@ -19,7 +20,7 @@ const checkoutSteps = [
   { number: 3, title: "Review", description: "Confirm order" },
 ];
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const { items, getTotal, clearCart } = useCartStore();
   const { user } = useAuthStore();
@@ -38,12 +39,6 @@ export default function CheckoutPage() {
 
   // Compute total upfront so it can be used in effects and rendering
   const total = getTotal();
-
-  useEffect(() => {
-    if (!user) {
-      router.push("/login?redirect=/checkout");
-    }
-  }, [user, router]);
 
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
@@ -340,5 +335,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <AuthGuard requireAuth>
+      <CheckoutContent />
+    </AuthGuard>
   );
 }

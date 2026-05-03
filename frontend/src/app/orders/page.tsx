@@ -7,8 +7,9 @@ import { ordersAPI } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import type { OrderSummary } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import AuthGuard from "@/components/AuthGuard";
 
-export default function OrdersPage() {
+function OrdersContent() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
@@ -16,10 +17,6 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      router.push("/login?redirect=/orders");
-      return;
-    }
     const fetchOrders = async () => {
       try {
         const response = await ordersAPI.getAll(0, 20);
@@ -31,8 +28,11 @@ export default function OrdersPage() {
         setLoading(false);
       }
     };
-    fetchOrders();
-  }, [user, router]);
+
+    if (user) {
+      fetchOrders();
+    }
+  }, [user]);
 
   if (!user) return null;
 
@@ -70,5 +70,13 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <AuthGuard requireAuth>
+      <OrdersContent />
+    </AuthGuard>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
+import AuthGuard from "@/components/AuthGuard";
 import {
   LayoutDashboard,
   Package,
@@ -15,24 +14,12 @@ import {
   ShieldAlert
 } from "lucide-react";
 
-export default function AdminDashboardPage() {
+function AdminDashboardContent() {
   const router = useRouter();
   const { user } = useAuthStore();
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/login?redirect=/admin");
-      return;
-    }
-    if (!user.is_admin) {
-      router.push("/");
-      return;
-    }
-  }, [user, router]);
-
-  if (!user || !user.is_admin) {
-    return <LoadingSpinner />;
-  }
+  // AuthGuard ensures user exists, but add defensive check for TypeScript
+  if (!user) return null;
 
   const adminSections = [
     {
@@ -168,5 +155,13 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminDashboardPage() {
+  return (
+    <AuthGuard requireAuth requireAdmin>
+      <AdminDashboardContent />
+    </AuthGuard>
   );
 }

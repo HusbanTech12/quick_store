@@ -11,6 +11,7 @@ import AuthFormInput from "@/components/auth/AuthFormInput";
 import PasswordVisibilityToggle from "@/components/auth/PasswordVisibilityToggle";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import AuthPageLayout from "@/components/auth/AuthPageLayout";
+import AuthGuard from "@/components/AuthGuard";
 
 interface FieldErrors {
   name?: string;
@@ -19,7 +20,7 @@ interface FieldErrors {
   confirmPassword?: string;
 }
 
-export default function RegisterForm() {
+function RegisterFormContent() {
   const router = useRouter();
   const register = useAuthStore((state) => state.register);
   const isLoading = useAuthStore((state) => state.isLoading);
@@ -296,5 +297,13 @@ export default function RegisterForm() {
         </Link>
       </p>
     </AuthPageLayout>
+  );
+}
+
+export default function RegisterForm() {
+  return (
+    <AuthGuard requireAuth={false}>
+      <RegisterFormContent />
+    </AuthGuard>
   );
 }

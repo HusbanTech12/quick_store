@@ -10,8 +10,9 @@ import Link from "next/link";
 import AuthFormInput from "@/components/auth/AuthFormInput";
 import PasswordVisibilityToggle from "@/components/auth/PasswordVisibilityToggle";
 import AuthPageLayout from "@/components/auth/AuthPageLayout";
+import AuthGuard from "@/components/AuthGuard";
 
-export default function LoginForm() {
+function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
@@ -211,5 +212,13 @@ export default function LoginForm() {
         </Link>
       </p>
     </AuthPageLayout>
+  );
+}
+
+export default function LoginForm() {
+  return (
+    <AuthGuard requireAuth={false}>
+      <LoginFormContent />
+    </AuthGuard>
   );
 }

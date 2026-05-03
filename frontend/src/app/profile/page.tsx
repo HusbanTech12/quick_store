@@ -8,6 +8,7 @@ import { usersAPI, ordersAPI } from "@/lib/api";
 import type { OrderSummary } from "@/types";
 import Button from "@/components/Button";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import AuthGuard from "@/components/AuthGuard";
 import {
   User as UserIcon,
   Mail,
@@ -20,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 
-export default function ProfilePage() {
+function ProfileContent() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
   const { success, error: showError } = useToast();
@@ -45,11 +46,6 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!user) {
-      router.push("/login?redirect=/profile");
-      return;
-    }
-
     // Fetch user's orders
     const fetchOrders = async () => {
       try {
@@ -62,8 +58,10 @@ export default function ProfilePage() {
       }
     };
 
-    fetchOrders();
-  }, [user, router]);
+    if (user) {
+      fetchOrders();
+    }
+  }, [user]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -456,5 +454,13 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <AuthGuard requireAuth>
+      <ProfileContent />
+    </AuthGuard>
   );
 }

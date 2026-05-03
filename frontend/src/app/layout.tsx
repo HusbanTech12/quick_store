@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ToastProvider } from "@/components/ToastProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AuthProvider from "@/components/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,11 +30,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ErrorBoundary>
-          <ToastProvider>
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </ToastProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </ToastProvider>
+          </AuthProvider>
         </ErrorBoundary>
       </body>
     </html>
