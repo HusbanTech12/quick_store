@@ -30,6 +30,15 @@ class PasswordChange(BaseModel):
     new_password: str = Field(..., min_length=6)
 
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=6)
+
+
 class UserResponse(UserBase):
     id: uuid.UUID
     is_admin: bool
@@ -138,6 +147,7 @@ class OrderResponse(OrderBase):
     created_at: datetime
     items: List[OrderItemNested] = []
     payment_status: Optional[str] = "pending"
+    order_status: str = "pending"
     stripe_session_id: Optional[str] = None
 
     class Config:
@@ -151,6 +161,11 @@ class OrderSummary(BaseModel):
     created_at: datetime
     item_count: int
     payment_status: Optional[str] = "pending"
+    order_status: str = "pending"
 
     class Config:
         from_attributes = True
+
+
+class OrderStatusUpdate(BaseModel):
+    order_status: str = Field(..., pattern="^(pending|processing|shipped|delivered|cancelled)$")

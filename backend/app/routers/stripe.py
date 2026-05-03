@@ -10,6 +10,7 @@ import uuid
 from .. import schemas, crud
 from ..database import get_db
 from ..routers.auth import get_current_user
+from ..utils.email import email_service
 
 router = APIRouter(prefix="/stripe", tags=["stripe"])
 
@@ -120,6 +121,28 @@ async def confirm_payment(
         # Update order status based on payment intent status
         if payment_intent.status == "succeeded":
             crud.update_order_payment_status(db, order.id, payment_status="paid")
+            crud.update_order_status(db, order.id, "processing")
+
+            # Send order confirmation email
+            try:
+                items_data = [
+                    {
+                        "title": item.product.title,
+                        "quantity": item.quantity,
+                        "price": item.price
+                    }
+                    for item in order.items
+                ]
+                email_service.send_order_confirmation_email(
+                    to_email=order.shipping_email,
+                    user_name=order.shipping_name,
+                    order_id=str(order.id),
+                    total_price=order.total_price,
+                    items=items_data
+                )
+            except Exception as e:
+                print(f"Failed to send order confirmation email: {str(e)}")
+
             return {
                 "status": "success",
                 "orderId": str(order.id),
@@ -268,6 +291,26 @@ async def stripe_webhook(
                     payment_status="paid",
                     stripe_session_id=session.id
                 )
+                crud.update_order_status(db, uuid.UUID(order_id), "processing")
+
+                # Send order confirmation email
+                order = crud.get_order(db, uuid.UUID(order_id))
+                if order:
+                    items_data = [
+                        {
+                            "title": item.product.title,
+                            "quantity": item.quantity,
+                            "price": item.price
+                        }
+                        for item in order.items
+                    ]
+                    email_service.send_order_confirmation_email(
+                        to_email=order.shipping_email,
+                        user_name=order.shipping_name,
+                        order_id=str(order.id),
+                        total_price=order.total_price,
+                        items=items_data
+                    )
             except Exception as e:
                 print(f"Error updating order {order_id}: {str(e)}")
                 return JSONResponse(status_code=500, content={"error": "Failed to update order"})

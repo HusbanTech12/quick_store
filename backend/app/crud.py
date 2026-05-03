@@ -39,6 +39,48 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Check a plain password against a stored bcrypt hash."""
     return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
+
+def set_password_reset_token(db: Session, user: models.User, token: str, expiry: datetime) -> models.User:
+    """Set password reset token and expiry for a user."""
+    user.password_reset_token = token
+    user.reset_token_expiry = expiry
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def get_user_by_reset_token(db: Session, token: str) -> Optional[models.User]:
+    """Get user by password reset token if token is valid and not expired."""
+    user = db.query(models.User).filter(models.User.password_reset_token == token).first()
+    if not user or not user.reset_token_expiry:
+        return None
+
+    # Check if token is expired
+    if datetime.utcnow() > user.reset_token_expiry:
+        return None
+
+    return user
+
+
+def reset_user_password(db: Session, user: models.User, new_password: str) -> models.User:
+    """Reset user password and clear reset token."""
+    hashed = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt())
+    user.hashed_password = hashed.decode("utf-8")
+    user.password_reset_token = None
+    user.reset_token_expiry = None
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def change_user_password(db: Session, user: models.User, new_password: str) -> models.User:
+    """Change user password (for authenticated password change)."""
+    hashed = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt())
+    user.hashed_password = hashed.decode("utf-8")
+    db.commit()
+    db.refresh(user)
+    return user
+
 # -------------------- Product CRUD --------------------
 
 def get_products(
@@ -223,3 +265,14 @@ def update_order_payment_status(
 
 def get_order_by_stripe_session(db: Session, stripe_session_id: str) -> Optional[models.Order]:
     return db.query(models.Order).filter(models.Order.stripe_session_id == stripe_session_id).first()
+
+
+def update_order_status(db: Session, order_id: uuid.UUID, order_status: str) -> models.Order:
+    """Update order status (pending, processing, shipped, delivered, cancelled)."""
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise ValueError("Order not found")
+    order.order_status = order_status
+    db.commit()
+    db.refresh(order)
+    return order

@@ -17,6 +17,10 @@ class User(Base):
     is_admin = Column(Boolean, default=False, server_default="false")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    # Password reset fields
+    password_reset_token = Column(String(255), nullable=True)
+    reset_token_expiry = Column(DateTime(timezone=True), nullable=True)
+
     # Relationship to orders
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
 
@@ -49,6 +53,7 @@ class Order(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     stripe_session_id = Column(String, nullable=True)
     payment_status = Column(String, nullable=True)  # 'pending', 'paid', 'failed'
+    order_status = Column(String, nullable=False, server_default="'pending'")  # 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
 
     # Unique constraint for webhook event tracking
     __table_args__ = (

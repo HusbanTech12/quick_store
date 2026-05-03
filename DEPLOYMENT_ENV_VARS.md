@@ -18,14 +18,34 @@ Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
 ### Stripe Payment (REQUIRED - causing 500 error)
 ```
 STRIPE_SECRET_KEY=YOUR_STRIPE_SECRET_KEY
-STRIPE_WEBHOOK_SECRET=WEBHOOK_SECRET
+STRIPE_WEBHOOK_SECRET=YOUR_WEBHOOK_SECRET
 ```
 Get from: https://dashboard.stripe.com/test/apikeys
 
-### Frontend URL (for CORS)
+### Frontend URL (for CORS and email links)
 ```
 FRONTEND_URL=https://your-app.vercel.app
 ```
+
+### Email Service (SMTP) - Required for password reset and order notifications
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=YOUR_EMAIL_ADDRESS
+SMTP_PASSWORD=YOUR_APP_PASSWORD
+FROM_EMAIL=YOUR_EMAIL_ADDRESS
+FROM_NAME=QuickStore
+```
+
+**For Gmail:**
+1. Enable 2-factor authentication on your Google account
+2. Generate an App Password: https://myaccount.google.com/apppasswords
+3. Use the 16-character app password as SMTP_PASSWORD
+
+**Alternative Email Providers:**
+- SendGrid: SMTP_HOST=smtp.sendgrid.net, SMTP_PORT=587
+- Mailgun: SMTP_HOST=smtp.mailgun.org, SMTP_PORT=587
+- AWS SES: SMTP_HOST=email-smtp.us-east-1.amazonaws.com, SMTP_PORT=587
 
 ### Optional
 ```

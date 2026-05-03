@@ -42,7 +42,9 @@ def get_orders(
             user_id=o.user_id,
             total_price=o.total_price,
             created_at=o.created_at,
-            item_count=len(o.items)
+            item_count=len(o.items),
+            payment_status=o.payment_status,
+            order_status=o.order_status
         )
         for o in orders
     ]
@@ -69,3 +71,46 @@ def get_order(
         )
 
     return schemas.OrderResponse.model_validate(order)
+
+
+@router.patch("/{order_id}/status", response_model=schemas.OrderResponse)
+def update_order_status(
+    order_id: uuid.UUID,
+    status_update: schemas.OrderStatusUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[schemas.UserResponse, Depends(get_current_user)]
+):
+    """Update order status (admin only or user can cancel their own orders)"""
+    order = crud.get_order(db, order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    # Users can only cancel their own orders
+    if not current_user.is_admin:
+        if order.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to update this order"
+            )
+        if status_update.order_status != "cancelled":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Users can only cancel orders"
+            )
+        if order.order_status in ["shipped", "delivered"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot cancel orders that have been shipped or delivered"
+            )
+
+    try:
+        updated_order = crud.update_order_status(db, order_id, status_update.order_status)
+        return schemas.OrderResponse.model_validate(updated_order)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

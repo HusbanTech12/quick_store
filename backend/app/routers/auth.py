@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Annotated
 import os
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ from jose import JWTError, jwt
 
 from .. import schemas, crud
 from ..database import get_db
+from ..utils.email import email_service
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -90,3 +92,73 @@ def login(
 async def read_users_me(current_user: Annotated[schemas.UserResponse, Depends(get_current_user)]):
     """Get current user info"""
     return current_user
+
+
+@router.post("/request-password-reset", status_code=status.HTTP_200_OK)
+def request_password_reset(
+    request_data: schemas.PasswordResetRequest,
+    db: Session = Depends(get_db)
+):
+    """Request a password reset email."""
+    user = crud.get_user_by_email(db, email=request_data.email)
+
+    # Always return success to prevent email enumeration
+    if not user:
+        return {"message": "If the email exists, a password reset link has been sent"}
+
+    # Generate secure reset token
+    reset_token = secrets.token_urlsafe(32)
+    expiry = datetime.utcnow() + timedelta(hours=1)
+
+    # Save token to database
+    crud.set_password_reset_token(db, user, reset_token, expiry)
+
+    # Send email
+    email_sent = email_service.send_password_reset_email(
+        to_email=user.email,
+        reset_token=reset_token,
+        user_name=user.name
+    )
+
+    if not email_sent:
+        # Log error but don't expose to user
+        print(f"Failed to send password reset email to {user.email}")
+
+    return {"message": "If the email exists, a password reset link has been sent"}
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+def reset_password(
+    reset_data: schemas.PasswordReset,
+    db: Session = Depends(get_db)
+):
+    """Reset password using a valid token."""
+    user = crud.get_user_by_reset_token(db, token=reset_data.token)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+
+    # Reset password and clear token
+    crud.reset_user_password(db, user, reset_data.new_password)
+
+    return {"message": "Password has been reset successfully"}
+
+
+@router.post("/verify-reset-token", status_code=status.HTTP_200_OK)
+def verify_reset_token(
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """Verify if a reset token is valid."""
+    user = crud.get_user_by_reset_token(db, token=token)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+
+    return {"message": "Token is valid", "email": user.email}
