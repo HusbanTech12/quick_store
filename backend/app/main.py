@@ -12,10 +12,22 @@ if os.getenv("CREATE_TABLES_ON_STARTUP", "true").lower() == "true":
 
 app = FastAPI(title="QuickStore E-commerce API", version="1.0.0")
 
-# CORS
+# CORS - Allow all origins for now, restrict in production
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:8000",
+    "https://quick-store-sooty.vercel.app",
+]
+
+# Add custom origin from environment variable if provided
+custom_origin = os.getenv("FRONTEND_URL")
+if custom_origin:
+    allowed_origins.append(custom_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8000","https://quick-store-sooty.vercel.app"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
