@@ -37,10 +37,8 @@ yarn-error.log*
 .env.*
 backend/.env
 backend/.env.*
-
+backend/.env.example
 # Allow template files (safe to commit)
-!.env.example
-!backend/.env.example
 
 
 # vercel
