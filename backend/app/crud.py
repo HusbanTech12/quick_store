@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, asc, desc, or_
 from typing import List, Optional, Tuple
 import bcrypt
@@ -242,14 +242,18 @@ def get_orders(
     limit: int = 20,
     user_id: Optional[uuid.UUID] = None,
 ) -> List[models.Order]:
-    query = db.query(models.Order)
+    query = db.query(models.Order).options(
+        joinedload(models.Order.items).joinedload(models.OrderItem.product)
+    )
     if user_id:
         query = query.filter(models.Order.user_id == user_id)
-    return query.offset(skip).limit(limit).all()
+    return query.order_by(desc(models.Order.created_at)).offset(skip).limit(limit).all()
 
 
 def get_order(db: Session, order_id: uuid.UUID) -> Optional[models.Order]:
-    return db.query(models.Order).filter(models.Order.id == order_id).first()
+    return db.query(models.Order).options(
+        joinedload(models.Order.items).joinedload(models.OrderItem.product)
+    ).filter(models.Order.id == order_id).first()
 
 # -------------------- Payment‑related CRUD --------------------
 

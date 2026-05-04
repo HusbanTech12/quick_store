@@ -35,7 +35,7 @@ function AdminOrdersContent() {
 
   const fetchOrders = async () => {
     try {
-      const response = await ordersAPI.getAllAdmin(0, 100);
+      const response = await ordersAPI.getAllAdmin(0, 50);
       setOrders(response.data);
     } catch (err) {
       showError("Failed to load orders", "Please try again");

@@ -38,7 +38,7 @@ function AdminUsersContent() {
 
   const fetchUsers = async () => {
     try {
-      const response = await usersAPI.getAllUsers(0, 100);
+      const response = await usersAPI.getAllUsers(0, 50);
       setUsers(response.data);
     } catch (err) {
       showError("Failed to load users", "Please try again");

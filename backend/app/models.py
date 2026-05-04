@@ -44,16 +44,16 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
     total_price = Column(Float, nullable=False)
     shipping_name = Column(String(255), nullable=False)
     shipping_address = Column(Text, nullable=False)
     shipping_city = Column(String(100), nullable=False)
     shipping_email = Column(String(255), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    stripe_session_id = Column(String, nullable=True)
-    payment_status = Column(String, nullable=True)  # 'pending', 'paid', 'failed'
-    order_status = Column(String, nullable=False, server_default="'pending'")  # 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    stripe_session_id = Column(String, nullable=True, index=True)
+    payment_status = Column(String, nullable=True, index=True)  # 'pending', 'paid', 'failed'
+    order_status = Column(String, nullable=False, server_default="'pending'", index=True)  # 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
 
     # Unique constraint for webhook event tracking
     __table_args__ = (
@@ -68,8 +68,8 @@ class OrderItem(Base):
     __tablename__ = "order_items"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
-    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
+    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False, index=True)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False, index=True)
     quantity = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
 

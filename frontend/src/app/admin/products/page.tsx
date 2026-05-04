@@ -40,7 +40,7 @@ function AdminProductsContent() {
   const fetchProducts = async () => {
     try {
       const response = await productsAPI.getAll({
-        limit: 100,
+        limit: 50,
         category: selectedCategory || undefined,
         search: searchQuery || undefined,
       });
