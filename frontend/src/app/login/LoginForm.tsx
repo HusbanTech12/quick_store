@@ -49,7 +49,16 @@ function LoginFormContent() {
     const success = await login(email, password);
     if (success) {
       showSuccess("Login Successful!", "Welcome back to QuickStore");
-      router.push(redirect);
+
+      // Get the logged-in user to check if they're admin
+      const user = useAuthStore.getState().user;
+
+      // Redirect admins to admin dashboard, others to redirect or home
+      if (user?.is_admin) {
+        router.push("/admin");
+      } else {
+        router.push(redirect);
+      }
     } else {
       showError("Login Failed", error || "Invalid email or password");
     }
