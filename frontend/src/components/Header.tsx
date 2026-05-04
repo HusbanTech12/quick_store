@@ -94,30 +94,12 @@ export default function Header() {
             >
               Products
             </Link>
-            {user && (
-              <>
-                <Link
-                  href="/orders"
-                  className="text-foreground hover:text-brand font-medium transition-colors"
-                >
-                  Orders
-                </Link>
-                {user.is_admin && (
-                  <Link
-                    href="/admin"
-                    className="text-foreground hover:text-brand font-medium transition-colors"
-                  >
-                    Admin
-                  </Link>
-                )}
-              </>
-            )}
-            {user && (
+            {user?.is_admin && (
               <Link
-                href="/profile"
+                href="/admin"
                 className="text-foreground hover:text-brand font-medium transition-colors"
               >
-                Orders
+                Admin
               </Link>
             )}
           </nav>
@@ -310,14 +292,32 @@ export default function Header() {
               >
                 Products
               </Link>
-              {user && (
+              {user?.is_admin && (
                 <Link
-                  href="/orders"
+                  href="/admin"
                   className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Orders
+                  Admin
                 </Link>
+              )}
+              {user && (
+                <>
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <Link
+                    href="/orders"
+                    className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    My Orders
+                  </Link>
+                </>
               )}
               <div className="pt-2 border-t border-border">
                 <DarkModeToggle />
