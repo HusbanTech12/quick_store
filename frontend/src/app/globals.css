@@ -180,6 +180,16 @@ body {
   to { transform: translateX(100%); }
 }
 
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
 @keyframes slideInUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
@@ -249,14 +259,16 @@ body {
 .animate-fade-in { animation: fadeIn var(--transition-slow) ease-out; }
 .animate-slide-in-up { animation: slideInUp var(--transition-slow) ease-out; }
 .animate-slide-in-down { animation: slideInDown var(--transition-slow) ease-out; }
+.animate-slide-in-right { animation: slideInRight var(--transition-slow) ease-out; }
+.animate-slide-out-right { animation: slideOutRight var(--transition-base) ease-in; }
 .animate-scale-in { animation: scaleIn var(--transition-slow) ease-out; }
 .animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 .animate-bounce-subtle { animation: bounce 2s ease-in-out infinite; }
 .animate-float { animation: float 3s ease-in-out infinite; }
 .animate-glow { animation: glow 2s ease-in-out infinite; }
-.animate-gradient { 
+.animate-gradient {
   background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite; 
+  animation: gradient-shift 3s ease infinite;
 }
 .animate-shimmer {
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
@@ -393,6 +405,48 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--foreground);
+}
+
+/* Custom scrollbar for specific elements */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 1);
+  border-radius: var(--radius-full);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 1);
+  border-radius: var(--radius-full);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 1);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 1);
+}
+
+/* Firefox scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) rgb(241 245 249);
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: rgb(71 85 105) rgb(30 41 59);
 }
 
 /* ========================================

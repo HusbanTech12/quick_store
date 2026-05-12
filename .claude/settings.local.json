@@ -26,7 +26,8 @@
       "Bash(cat /mnt/d/Projects/quick_store/frontend/.env*)",
       "Bash(uvicorn app.main:app --reload --host 0.0.0.0 --port 8000)",
       "Bash(kill -9 6289)",
-      "Bash(python -m alembic revision -m \"add_password_reset_and_order_status_fields\")"
+      "Bash(python -m alembic revision -m \"add_password_reset_and_order_status_fields\")",
+      "Bash(grep -E \"\\\\.\\(tsx|ts|jsx|js\\)$\")"
     ]
   }
 }
