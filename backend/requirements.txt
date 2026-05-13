@@ -10,3 +10,9 @@ passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.17
 email-validator>=2.2.0
 stripe>=10.0.0
+
+# RAG Stack (Free)
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+httpx>=0.25.0
+aiohttp>=3.9.0

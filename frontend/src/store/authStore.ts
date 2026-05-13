@@ -28,6 +28,9 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       initialize: async () => {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+
         // This runs after rehydration to validate the token
         const token = localStorage.getItem("token");
         if (!token) {
@@ -58,6 +61,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       login: async (email: string, password: string) => {
+        if (typeof window === 'undefined') return false;
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.login(email, password);
@@ -78,6 +82,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       register: async (userData: UserCreate) => {
+        if (typeof window === 'undefined') return false;
         set({ isLoading: true, error: null });
         try {
           // Register user
@@ -102,12 +107,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        if (typeof window === 'undefined') return;
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         set({ user: null, token: null });
       },
 
       fetchMe: async () => {
+        if (typeof window === 'undefined') return;
         const token = localStorage.getItem("token");
         if (!token) {
           set({ user: null, isInitialized: true });
