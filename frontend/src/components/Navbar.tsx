@@ -56,7 +56,7 @@ export default function Navbar() {
               <span className="text-white font-bold text-lg">Q</span>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-              QuickStore
+              Store.pk
             </span>
           </Link>
 

@@ -77,27 +77,27 @@ export default function Footer() {
 
       {/* Newsletter Section */}
       <div className="relative border-b border-slate-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 p-8 sm:p-12 shadow-lg">
+        <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="relative p-8 overflow-hidden bg-white border shadow-lg rounded-3xl dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 sm:p-12">
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-pattern-grid opacity-50 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-accent/5 to-transparent rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-brand/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 opacity-50 pointer-events-none bg-pattern-grid" />
+            <div className="absolute bottom-0 left-0 rounded-full pointer-events-none w-72 h-72 bg-gradient-to-tr from-accent/5 to-transparent blur-3xl" />
+            <div className="absolute top-0 right-0 rounded-full pointer-events-none w-72 h-72 bg-gradient-to-bl from-brand/5 to-transparent blur-3xl" />
 
-            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="relative flex flex-col items-center justify-between gap-8 lg:flex-row">
               <div className="text-center lg:text-left">
-                <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                <h3 className="mb-2 text-2xl font-bold sm:text-3xl text-foreground">
                   Stay in the Loop
                 </h3>
-                <p className="text-muted-foreground max-w-md">
+                <p className="max-w-md text-muted-foreground">
                   Subscribe to our newsletter for exclusive deals, new arrivals, and insider updates.
                 </p>
               </div>
-              <div className="flex w-full lg:w-auto gap-3">
+              <div className="flex w-full gap-3 lg:w-auto">
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 lg:w-80 px-5 py-4 bg-muted dark:bg-slate-700/50 border border-border rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand"
+                  className="flex-1 px-5 py-4 border lg:w-80 bg-muted dark:bg-slate-700/50 border-border rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand"
                 />
                 <button className="px-6 py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 whitespace-nowrap bg-[length:200%_auto] animate-gradient">
                   Subscribe
@@ -110,17 +110,17 @@ export default function Footer() {
       </div>
 
       {/* Main Footer */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
+      <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
           {/* Brand Column */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                <span className="text-white font-bold text-lg">Q</span>
+              <div className="flex items-center justify-center w-10 h-10 shadow-lg rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/25">
+                {/* <span className="text-lg font-bold text-white">Q</span> */}
               </div>
-              <span className="text-xl font-bold text-white">QuickStore</span>
+              <span className="text-xl font-bold text-white">Store.pk</span>
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
+            <p className="mb-6 text-sm leading-relaxed text-slate-400">
               Premium products, exceptional service, and a shopping experience you&apos;ll love.
             </p>
             {/* Social Links */}
@@ -140,13 +140,13 @@ export default function Footer() {
 
           {/* Links Columns */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
+            <h4 className="mb-4 font-semibold text-white">Company</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -156,13 +156,13 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Shop</h4>
+            <h4 className="mb-4 font-semibold text-white">Shop</h4>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -172,13 +172,13 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Support</h4>
+            <h4 className="mb-4 font-semibold text-white">Support</h4>
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -189,14 +189,14 @@ export default function Footer() {
         </div>
 
         {/* Contact Info */}
-        <div className="mt-12 pt-8 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 pt-8 mt-12 border-t border-slate-800 sm:grid-cols-3">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-slate-800">
               <Mail className="w-4 h-4 text-indigo-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Email</p>
-              <p className="text-sm text-white">support@quickstore.com</p>
+              <p className="text-xs tracking-wide uppercase text-slate-500">Email</p>
+              <p className="text-sm text-white">support@store.pk</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -204,7 +204,7 @@ export default function Footer() {
               <Phone className="w-4 h-4 text-indigo-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Phone</p>
+              <p className="text-xs tracking-wide uppercase text-slate-500">Phone</p>
               <p className="text-sm text-white">+1 (555) 123-4567</p>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function Footer() {
               <MapPin className="w-4 h-4 text-indigo-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Address</p>
+              <p className="text-xs tracking-wide uppercase text-slate-500">Address</p>
               <p className="text-sm text-white">San Francisco, CA</p>
             </div>
           </div>
@@ -222,7 +222,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-slate-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col items-center justify-between gap-4 px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8 sm:flex-row">
           <p className="text-sm text-slate-500">
             &copy; {new Date().getFullYear()} QuickStore. All rights reserved.
           </p>
@@ -231,7 +231,7 @@ export default function Footer() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-sm text-slate-500 hover:text-white transition-colors"
+                className="text-sm transition-colors text-slate-500 hover:text-white"
               >
                 {link.label}
               </Link>
