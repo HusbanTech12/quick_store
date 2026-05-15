@@ -48,25 +48,25 @@ export default function Navbar() {
           : "bg-transparent"
       }`}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-shadow">
-              <span className="text-white font-bold text-lg">Q</span>
+            <div className="flex items-center justify-center w-10 h-10 transition-shadow shadow-lg rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/25 group-hover:shadow-indigo-500/40">
+              <span className="text-lg font-bold text-white">Q</span>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+            <span className="text-xl font-bold text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text">
               Store.pk
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="items-center hidden gap-1 md:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.href + link.label}
                 href={link.href}
-                className="relative px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors group"
+                className="relative px-4 py-2 text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white group"
               >
                 {link.label}
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 group-hover:w-6 transition-all duration-300 rounded-full" />
@@ -84,7 +84,7 @@ export default function Navbar() {
                 className="overflow-hidden"
               >
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Search className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search products..."
@@ -101,7 +101,7 @@ export default function Navbar() {
               href="/cart"
               className="relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors group"
             >
-              <ShoppingCart className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+              <ShoppingCart className="w-5 h-5 transition-colors text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white" />
               {cartItemCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
@@ -119,7 +119,7 @@ export default function Navbar() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
                   <User className="w-4 h-4 text-white" />
                 </div>
                 {user && (
@@ -137,14 +137,14 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-56 glass rounded-xl shadow-xl shadow-slate-900/10 overflow-hidden"
+                    className="absolute right-0 w-56 mt-2 overflow-hidden shadow-xl glass rounded-xl shadow-slate-900/10"
                   >
                     <div className="p-2">
                       {user ? (
                         <>
                           <div className="px-3 py-2.5 border-b border-slate-200 dark:border-slate-700">
                             <p className="text-sm font-medium text-slate-900 dark:text-white">{user.name}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
+                            <p className="text-xs truncate text-slate-500 dark:text-slate-400">{user.email}</p>
                           </div>
                           <Link
                             href="/orders"
@@ -201,16 +201,16 @@ export default function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden glass border-t border-slate-200 dark:border-slate-800"
+            className="border-t md:hidden glass border-slate-200 dark:border-slate-800"
           >
             <div className="px-4 py-4 space-y-1">
               {/* Mobile Search */}
               <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search products..."
-                  className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border-0 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  className="w-full py-3 pl-10 pr-4 text-sm border-0 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export default function Navbar() {
                 <Link
                   key={link.href + link.label + "-mobile"}
                   href={link.href}
-                  className="block px-4 py-3 text-base font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                  className="block px-4 py-3 text-base font-medium transition-colors text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
@@ -228,7 +228,7 @@ export default function Navbar() {
               {!user && (
                 <Link
                   href="/login"
-                  className="flex items-center justify-center gap-2 w-full mt-4 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
+                  className="flex items-center justify-center w-full gap-2 px-4 py-3 mt-4 font-medium text-white transition-all bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <User className="w-5 h-5" />
