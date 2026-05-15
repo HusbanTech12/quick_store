@@ -48,7 +48,7 @@ function LoginFormContent() {
 
     const success = await login(email, password);
     if (success) {
-      showSuccess("Login Successful!", "Welcome back to QuickStore");
+      showSuccess("Login Successful!", "Welcome back to Shop.pk");
 
       // Get the logged-in user to check if they're admin
       const user = useAuthStore.getState().user;

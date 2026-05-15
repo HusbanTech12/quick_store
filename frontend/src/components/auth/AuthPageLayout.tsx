@@ -77,7 +77,7 @@ export default function AuthPageLayout({
             <span className="text-white font-bold text-sm">Q</span>
           </div>
           <span className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-            QuickStore
+            Shop.pk
           </span>
         </Link>
       </motion.div>

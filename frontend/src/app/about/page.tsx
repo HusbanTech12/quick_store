@@ -6,7 +6,7 @@ export default function AboutPage() {
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-4">
-            About QuickStore
+            About Shop.pk
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             We believe shopping should be a premium experience — curated, seamless, and delightful.
@@ -19,7 +19,7 @@ export default function AboutPage() {
               Our Mission
             </h2>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-              QuickStore was founded with a simple vision: to create an e-commerce platform that
+              Shop.pk was founded with a simple vision: to create an e-commerce platform that
               prioritizes quality over quantity. Every product in our catalog is carefully vetted
               to ensure it meets our premium standards. We&apos;re not just another marketplace —
               we&apos;re your trusted curator for the best products available.

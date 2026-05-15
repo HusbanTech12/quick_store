@@ -71,7 +71,7 @@ function RegisterFormContent() {
     const success = await register({ email, name, password });
     if (success) {
       setIsSuccess(true);
-      showSuccess("Account Created!", "Welcome to QuickStore! Redirecting you...");
+      showSuccess("Account Created!", "Welcome to Shop.pk! Redirecting you...");
       setTimeout(() => router.push("/"), 1500);
     } else {
       showError("Registration Failed", error || "Unable to create account. Please try again.");

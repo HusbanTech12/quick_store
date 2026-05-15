@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "QuickStore - Premium E-commerce",
+  title: "Shop.pk - Premium E-commerce",
   description: "Modern e-commerce store built with Next.js and Tailwind CSS. Discover premium products with fast shipping and secure checkout.",
 };
 

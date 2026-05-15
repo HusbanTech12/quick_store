@@ -55,7 +55,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
               <div>
                 <h2 className="font-bold text-lg">Admin Panel</h2>
-                <p className="text-xs text-muted-foreground">QuickStore</p>
+                <p className="text-xs text-muted-foreground">Shop.pk</p>
               </div>
             </div>
 

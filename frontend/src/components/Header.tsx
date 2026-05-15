@@ -75,9 +75,9 @@ export default function Header() {
           <Link
             href="/"
             className="text-2xl font-bold gradient-text hover:opacity-80 transition-opacity flex-shrink-0"
-            aria-label="QuickStore Home"
+            aria-label="Shop.pk Home"
           >
-            QuickStore
+            Shop.pk
           </Link>
 
           {/* Desktop Navigation */}

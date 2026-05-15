@@ -224,7 +224,7 @@ export default function Footer() {
       <div className="border-t border-slate-800">
         <div className="flex flex-col items-center justify-between gap-4 px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8 sm:flex-row">
           <p className="text-sm text-slate-500">
-            &copy; {new Date().getFullYear()} QuickStore. All rights reserved.
+            &copy; {new Date().getFullYear()} Shop.pk. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             {footerLinks.legal.map((link) => (
