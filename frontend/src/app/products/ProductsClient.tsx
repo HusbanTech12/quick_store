@@ -246,24 +246,48 @@ export default function ProductsClient() {
         {/* Extended Filters */}
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-in-down">
-            {/* Category Filter */}
+            {/* Category Filter with custom dropdown */}
             <div>
               <label className="block text-sm font-medium mb-2" htmlFor="category-filter">
                 Category
               </label>
-              <select
-                id="category-filter"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
-              >
-                <option value="">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="category-filter"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border border-border rounded-lg bg-card text-foreground appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
+                >
+                  <option value="">All Categories</option>
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>No categories</option>
+                  )}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Featured Toggle - moved to second position */}
+            <div className="flex items-end">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={featuredOnly}
+                  onChange={(e) => setFeaturedOnly(e.target.checked)}
+                  className="w-5 h-5 rounded border-border text-brand focus:ring-brand"
+                />
+                <span className="text-sm font-medium">Featured Only</span>
+              </label>
             </div>
 
             {/* Price Range */}
@@ -287,19 +311,6 @@ export default function ProductsClient() {
                   min="0"
                 />
               </div>
-            </div>
-
-            {/* Featured Toggle */}
-            <div className="flex items-end">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={featuredOnly}
-                  onChange={(e) => setFeaturedOnly(e.target.checked)}
-                  className="w-5 h-5 rounded border-border text-brand focus:ring-brand"
-                />
-                <span className="text-sm font-medium">Featured Only</span>
-              </label>
             </div>
 
             {/* Apply Button */}
