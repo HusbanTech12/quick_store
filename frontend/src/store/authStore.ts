@@ -38,6 +38,13 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
 
+        // Check if we already have valid user data from persist (don't re-validate immediately after login)
+        const state = useAuthStore.getState();
+        if (state.user && state.token === token) {
+          set({ isInitialized: true });
+          return;
+        }
+
         set({ isLoading: true });
         try {
           const response = await authAPI.me();
@@ -48,7 +55,19 @@ export const useAuthStore = create<AuthState>()(
             isInitialized: true
           });
         } catch (error) {
-          // Token is invalid or expired
+          // Don't immediately clear token on error - could be network issue
+          // Keep the token and user data if they exist in localStorage
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) {
+            try {
+              const userData = JSON.parse(storedUser);
+              set({ user: userData, token, isLoading: false, isInitialized: true });
+              return;
+            } catch {
+              // Invalid stored user data
+            }
+          }
+          // Only clear if truly invalid
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           set({
@@ -71,6 +90,9 @@ export const useAuthStore = create<AuthState>()(
           // Fetch user data
           const userResponse = await authAPI.me();
           const user = userResponse.data;
+
+          // Store user data for persistence
+          localStorage.setItem("user", JSON.stringify(user));
 
           set({ user, token: access_token, isLoading: false, isInitialized: true });
           return true;
@@ -96,6 +118,9 @@ export const useAuthStore = create<AuthState>()(
           // Fetch complete user data
           const userResponse = await authAPI.me();
           const user = userResponse.data;
+
+          // Store user data for persistence
+          localStorage.setItem("user", JSON.stringify(user));
 
           set({ user, token: access_token, isLoading: false, isInitialized: true });
           return true;
@@ -123,8 +148,22 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const response = await authAPI.me();
-          set({ user: response.data, token, isLoading: false, isInitialized: true });
+          const user = response.data;
+          // Store user data for persistence
+          localStorage.setItem("user", JSON.stringify(user));
+          set({ user, token, isLoading: false, isInitialized: true });
         } catch (error) {
+          // Don't clear token immediately - could be network issue
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) {
+            try {
+              const userData = JSON.parse(storedUser);
+              set({ user: userData, token, isLoading: false, isInitialized: true });
+              return;
+            } catch {
+              // Invalid stored user data
+            }
+          }
           localStorage.removeItem("token");
           set({ user: null, token: null, isLoading: false, isInitialized: true });
         }
