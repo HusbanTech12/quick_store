@@ -31,6 +31,7 @@ function AdminProductsContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [categories, setCategories] = useState<string[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
     fetchProducts();
@@ -53,11 +54,14 @@ function AdminProductsContent() {
   };
 
   const fetchCategories = async () => {
+    setCategoriesLoading(true);
     try {
       const response = await productsAPI.getCategories();
       setCategories(response.data);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
@@ -132,21 +136,53 @@ function AdminProductsContent() {
 
           <div>
             <label className="block text-sm font-medium mb-2">Category</label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setLoading(true);
-              }}
-              className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              {categoriesLoading ? (
+                <div className="w-full px-4 py-2.5 border border-border rounded-lg bg-muted animate-pulse">
+                  <span className="text-muted-foreground">Loading categories...</span>
+                </div>
+              ) : (
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setLoading(true);
+                    fetchProducts();
+                  }}
+                  className="w-full px-4 py-2.5 pr-10 border border-border rounded-lg bg-card text-foreground appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
+                >
+                  <option value="">All Categories</option>
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      No categories available
+                    </option>
+                  )}
+                </select>
+              )}
+              {!categoriesLoading && (
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
