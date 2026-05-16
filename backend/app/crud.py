@@ -145,6 +145,7 @@ def get_products(
     sort_by: str = "created_at",
     sort_order: str = "desc",
     featured_only: bool = False,
+    include_inactive: bool = False,
 ) -> Tuple[List[models.Product], int]:
     """Return a list of products with pagination, filters and total count.
 
@@ -152,6 +153,10 @@ def get_products(
     sorting by a whitelist of fields, and a flag to return only featured products.
     """
     query = db.query(models.Product)
+
+    # Filter by active status unless include_inactive is True
+    if not include_inactive:
+        query = query.filter(models.Product.is_active.is_(True))
 
     if category:
         query = query.filter(models.Product.category == category)
@@ -180,8 +185,11 @@ def get_products(
     return items, total
 
 
-def get_product(db: Session, product_id: uuid.UUID) -> Optional[models.Product]:
-    return db.query(models.Product).filter(models.Product.id == product_id).first()
+def get_product(db: Session, product_id: uuid.UUID, include_inactive: bool = False) -> Optional[models.Product]:
+    query = db.query(models.Product).filter(models.Product.id == product_id)
+    if not include_inactive:
+        query = query.filter(models.Product.is_active.is_(True))
+    return query.first()
 
 
 def create_product(db: Session, product_data: schemas.ProductCreate) -> models.Product:
@@ -217,14 +225,22 @@ def update_product(
 
 
 def delete_product(db: Session, product_id: uuid.UUID) -> bool:
-    result = db.query(models.Product).filter(models.Product.id == product_id).delete()
+    """Soft delete a product by setting is_active to False."""
+    db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not db_product:
+        return False
+
+    db_product.is_active = False
     db.commit()
-    return bool(result)
+    db.refresh(db_product)
+    return True
 
 
 def get_categories(db: Session) -> List[str]:
-    """Return a list of distinct product categories."""
-    categories = db.query(models.Product.category).distinct().order_by(models.Product.category).all()
+    """Return a list of distinct product categories from active products only."""
+    categories = db.query(models.Product.category).filter(
+        models.Product.is_active.is_(True)
+    ).distinct().order_by(models.Product.category).all()
     return [c[0] for c in categories]
 
 # -------------------- Order CRUD --------------------

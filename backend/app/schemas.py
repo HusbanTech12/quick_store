@@ -67,6 +67,7 @@ class ProductBase(BaseModel):
     image: Optional[str] = Field(None, max_length=500)
     stock: int = Field(0, ge=0)
     is_featured: bool = False
+    is_active: bool = True
 
 
 class ProductCreate(ProductBase):
@@ -81,10 +82,12 @@ class ProductUpdate(BaseModel):
     image: Optional[str] = Field(None, max_length=500)
     stock: Optional[int] = Field(None, ge=0)
     is_featured: Optional[bool] = None
+    is_active: Optional[bool] = None
 
 
 class ProductResponse(ProductBase):
     id: uuid.UUID
+    is_active: bool = True
     created_at: datetime
 
     class Config:

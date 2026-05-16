@@ -33,9 +33,11 @@ def get_products(
     search: Optional[str] = Query(None),
     sort_by: str = Query("created_at", pattern="^(created_at|price|title|stock)$"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$"),
-    featured_only: bool = Query(False)
+    featured_only: bool = Query(False),
+    include_inactive: bool = Query(False)
 ):
-    """Get all products with filtering and pagination"""
+    """Get all products with filtering and pagination.
+    Admins can include inactive products with include_inactive=true."""
     products, total = crud.get_products(
         db=db,
         skip=skip,
@@ -46,7 +48,8 @@ def get_products(
         search=search,
         sort_by=sort_by,
         sort_order=sort_order,
-        featured_only=featured_only
+        featured_only=featured_only,
+        include_inactive=include_inactive
     )
     response.headers["X-Total-Count"] = str(total)
     return [schemas.ProductResponse.model_validate(p) for p in products]
@@ -106,11 +109,20 @@ def delete_product(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[schemas.UserResponse, Depends(require_admin)]
 ):
-    """Delete product (Admin only)"""
-    success = crud.delete_product(db, product_id)
-    if not success:
+    """Soft delete product (Admin only) - sets is_active to false"""
+    # Check if product exists (include inactive for admin)
+    product = crud.get_product(db, product_id, include_inactive=True)
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
+        )
+
+    # Soft delete
+    success = crud.delete_product(db, product_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete product"
         )
     return None
