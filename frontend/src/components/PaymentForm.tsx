@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   PaymentElement,
   useStripe,
@@ -20,6 +20,24 @@ export default function PaymentForm({ amount, onSuccess, onError }: PaymentFormP
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [elementsError, setElementsError] = useState(false);
+
+  useEffect(() => {
+    // Wait for elements to be ready
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Check if elements failed to load
+  useEffect(() => {
+    if (!isLoading && !elements) {
+      setElementsError(true);
+      setErrorMessage("Unable to load payment form. Please refresh and try again.");
+    }
+  }, [isLoading, elements]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,13 +100,22 @@ export default function PaymentForm({ amount, onSuccess, onError }: PaymentFormP
           </div>
 
           {/* Payment Element with premium styling */}
-          <div className="bg-white dark:bg-slate-950 rounded-xl p-6 shadow-inner border border-slate-200 dark:border-slate-800">
-            <PaymentElement
-              options={{
-                layout: "tabs",
-                paymentMethodOrder: ["card", "us_bank_account"],
-              }}
-            />
+          <div className="bg-white dark:bg-slate-950 rounded-xl p-6 shadow-inner border border-slate-200 dark:border-slate-800 min-h-[200px]">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Loading payment form...</p>
+                </div>
+              </div>
+            ) : (
+              <PaymentElement
+                options={{
+                  layout: "tabs",
+                  paymentMethodOrder: ["card", "us_bank_account"],
+                }}
+              />
+            )}
           </div>
 
           {/* Error Message */}
