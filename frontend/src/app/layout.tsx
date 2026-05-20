@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
 import { ToastProvider } from "@/components/ToastProvider";
@@ -33,7 +33,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <AuthProvider>
             <ToastProvider>
-              <Header />
+              <Navbar />
               <main className="flex-grow">{children}</main>
               <Footer />
               <Chatbot />

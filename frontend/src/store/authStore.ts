@@ -39,8 +39,8 @@ export const useAuthStore = create<AuthState>()(
         }
 
         // Check if we already have valid user data from persist (don't re-validate immediately after login)
-        const state = useAuthStore.getState();
-        if (state.user && state.token === token) {
+        const currentState = get();
+        if (currentState.user && currentState.token === token) {
           set({ isInitialized: true });
           return;
         }

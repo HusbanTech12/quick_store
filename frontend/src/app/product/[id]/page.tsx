@@ -9,7 +9,6 @@ import type { Product } from "@/types";
 import ProductCard from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/Skeletons";
 import EmptyState from "@/components/EmptyState";
-import Button from "@/components/Button";
 import {
   ShoppingCart,
   Star,
@@ -20,7 +19,13 @@ import {
   Package,
   AlertTriangle,
   ArrowLeft,
+  Heart,
+  Share2,
+  Minus,
+  Plus,
+  Check,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -32,8 +37,10 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
   const addItem = useCartStore((state) => state.addItem);
-  const { success, error: showError } = useToast();
+  const { success } = useToast();
 
   useEffect(() => {
     async function fetchData() {
@@ -46,7 +53,6 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
 
         setProduct(productRes.data);
 
-        // Get related products (same category, exclude current product)
         const related = allProductsRes.data
           .filter((p: Product) => p.category === productRes.data.category && p.id !== id)
           .slice(0, 4);
@@ -82,14 +88,15 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="skeleton h-96 rounded-xl" />
+      <div className="mx-auto px-6 py-12 max-w-7xl lg:px-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div className="skeleton aspect-square rounded-lg" />
           <div className="space-y-4">
-            <div className="skeleton h-10 w-3/4" />
-            <div className="skeleton h-8 w-1/3" />
-            <div className="skeleton h-24 w-full" />
-            <div className="skeleton h-12 w-1/2" />
+            <div className="skeleton h-4 w-16" />
+            <div className="skeleton h-8 w-3/4" />
+            <div className="skeleton h-5 w-1/3" />
+            <div className="skeleton h-16 w-full" />
+            <div className="skeleton h-10 w-full" />
           </div>
         </div>
       </div>
@@ -110,212 +117,235 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
 
   const isOutOfStock = product.stock === 0;
   const isLowStock = product.stock > 0 && product.stock <= 5;
+  const images = product.image ? [product.image, product.image, product.image, product.image] : [];
 
   return (
-    <div className="container mx-auto px-4 py-8 lg:py-12">
+    <div className="mx-auto px-6 py-8 max-w-7xl lg:px-8 lg:py-12">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8" aria-label="Breadcrumb">
+      <nav className="flex flex-wrap items-center gap-1.5 mb-8 text-xs text-zinc-400" aria-label="Breadcrumb">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1 hover:text-foreground transition-colors"
+          className="flex items-center gap-1 transition-colors hover:text-zinc-900"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3 h-3" />
           Back
         </button>
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-2.5 h-2.5" />
         <button
           onClick={() => router.push("/products")}
-          className="hover:text-foreground transition-colors"
+          className="transition-colors hover:text-zinc-900"
         >
           Products
         </button>
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-2.5 h-2.5" />
         <button
           onClick={() => router.push(`/products?category=${product.category}`)}
-          className="hover:text-foreground transition-colors"
+          className="transition-colors hover:text-zinc-900"
         >
           {product.category}
         </button>
-        <ChevronRight className="w-4 h-4" />
-        <span className="text-foreground line-clamp-1">{product.title}</span>
+        <ChevronRight className="w-2.5 h-2.5" />
+        <span className="font-medium truncate text-zinc-600 line-clamp-1">{product.title}</span>
       </nav>
 
       {/* Product Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+      <div className="grid grid-cols-1 gap-8 mb-16 lg:gap-12 lg:grid-cols-2">
         {/* Image Gallery */}
-        <div className="space-y-4">
-          {/* Main Image */}
-          <div className="bg-muted rounded-xl overflow-hidden aspect-square flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-3"
+        >
+          <div className="overflow-hidden border rounded-lg border-zinc-200 bg-zinc-50">
             {product.image ? (
               <img
-                src={product.image}
+                src={images[activeImage]}
                 alt={product.title}
-                className="w-full h-full object-cover"
+                className="object-cover w-full transition-transform duration-500 aspect-square hover:scale-[1.02]"
               />
             ) : (
-              <div className="text-center">
-                <Package className="w-24 h-24 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No image available</p>
+              <div className="flex flex-col items-center justify-center w-full aspect-square">
+                <Package className="w-12 h-12 mb-2 text-zinc-300" />
+                <p className="text-sm text-zinc-400">No image available</p>
               </div>
             )}
           </div>
 
-          {/* Thumbnail placeholders */}
-          {product.image && (
-            <div className="grid grid-cols-4 gap-3">
-              {[product.image, product.image, product.image, product.image].map((img, i) => (
-                <div
+          {images.length > 0 && (
+            <div className="grid grid-cols-4 gap-2">
+              {images.map((img, i) => (
+                <button
                   key={i}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-colors ${
-                    i === 0 ? "border-brand" : "border-border hover:border-brand/50"
+                  onClick={() => setActiveImage(i)}
+                  className={`overflow-hidden transition-all border rounded-md aspect-square ${
+                    i === activeImage
+                      ? "border-zinc-900"
+                      : "border-zinc-200 hover:border-zinc-300"
                   }`}
                 >
-                  <img src={img} alt={`${product.title} view ${i + 1}`} className="w-full h-full object-cover" />
-                </div>
+                  <img src={img} alt={`${product.title} view ${i + 1}`} className="object-cover w-full h-full" />
+                </button>
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Product Info */}
-        <div className="flex flex-col">
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          className="flex flex-col"
+        >
           {/* Category & Badge */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-semibold text-brand uppercase tracking-wide">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase rounded-sm bg-zinc-100 text-zinc-500">
               {product.category}
             </span>
             {product.is_featured && (
-              <span className="bg-gradient-to-r from-brand to-accent text-white text-xs font-bold px-3 py-1 rounded-full">
-                ⭐ Featured
+              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase rounded-sm bg-zinc-900 text-white">
+                Featured
               </span>
             )}
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+          <h1 className="mb-3 text-h1 text-zinc-900">
             {product.title}
           </h1>
 
           {/* Rating */}
-          <div className="flex items-center gap-2 mb-6">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="flex items-center gap-px">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star key={star} className="w-5 h-5 fill-warning text-warning" />
+                <Star key={star} className="w-4 h-4 fill-zinc-900 text-zinc-900" />
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">(4.5 rating)</span>
+            <span className="text-sm text-zinc-500">4.5 (128 reviews)</span>
           </div>
 
           {/* Price */}
-          <div className="mb-6">
-            <span className="text-4xl font-bold text-foreground">
+          <div className="mb-5">
+            <span className="text-2xl font-semibold text-zinc-900">
               ${product.price.toFixed(2)}
             </span>
           </div>
 
           {/* Description */}
           {product.description && (
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="mb-5 text-sm leading-relaxed text-zinc-500">
               {product.description}
             </p>
           )}
 
           {/* Stock Status */}
-          <div className="mb-6">
+          <div className="p-3 mb-5 rounded-md bg-zinc-50">
             {isOutOfStock ? (
-              <div className="flex items-center gap-2 text-error">
-                <AlertTriangle className="w-5 h-5" />
-                <span className="font-semibold">Out of Stock</span>
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-sm font-medium">Out of Stock</span>
               </div>
             ) : isLowStock ? (
-              <div className="flex items-center gap-2 text-warning">
-                <AlertTriangle className="w-5 h-5" />
-                <span className="font-semibold">Only {product.stock} left in stock!</span>
+              <div className="flex items-center gap-2 text-amber-600">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-sm font-medium">Only {product.stock} left</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-success">
-                <Package className="w-5 h-5" />
-                <span className="font-semibold">In Stock ({product.stock} available)</span>
+              <div className="flex items-center gap-2 text-zinc-600">
+                <Check className="w-4 h-4" />
+                <span className="text-sm font-medium">In Stock ({product.stock} available)</span>
               </div>
             )}
           </div>
 
-          {/* Quantity Selector */}
+          {/* Quantity */}
           {!isOutOfStock && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Quantity</label>
-              <div className="flex items-center gap-3">
+            <div className="mb-5">
+              <label className="block mb-2 text-xs font-medium text-zinc-500">Quantity</label>
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleQuantityChange(quantity - 1)}
                   disabled={quantity <= 1}
-                  className="w-10 h-10 flex items-center justify-center border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-8 h-8 transition-colors border rounded-md border-zinc-200 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Decrease quantity"
                 >
-                  -
+                  <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="w-16 text-center font-semibold text-lg">{quantity}</span>
+                <span className="w-10 text-sm font-medium text-center text-zinc-900">{quantity}</span>
                 <button
                   onClick={() => handleQuantityChange(quantity + 1)}
                   disabled={quantity >= product.stock}
-                  className="w-10 h-10 flex items-center justify-center border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-8 h-8 transition-colors border rounded-md border-zinc-200 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Increase quantity"
                 >
-                  +
+                  <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           )}
 
-          {/* Add to Cart Button */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={isOutOfStock || isAdding}
-            variant="primary"
-            size="lg"
-            fullWidth
-            loading={isAdding}
-            leftIcon={<ShoppingCart className="w-5 h-5" />}
-            className="mb-4"
-          >
-            {isOutOfStock ? "Out of Stock" : isAdding ? "Added!" : `Add to Cart - $${(product.price * quantity).toFixed(2)}`}
-          </Button>
+          {/* Actions */}
+          <div className="flex flex-col gap-2 mb-8 sm:flex-row">
+            <button
+              onClick={handleAddToCart}
+              disabled={isOutOfStock || isAdding}
+              className="flex items-center justify-center flex-1 gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors rounded-md bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ShoppingCart className={`w-4 h-4 ${isAdding ? "animate-spin" : ""}`} />
+              {isOutOfStock ? "Out of Stock" : isAdding ? "Added!" : `Add to Cart - $${(product.price * quantity).toFixed(2)}`}
+            </button>
+            <button
+              onClick={() => setIsWishlisted(!isWishlisted)}
+              className={`flex items-center justify-center p-2.5 transition-colors border rounded-md ${
+                isWishlisted
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-200 text-zinc-500 hover:bg-zinc-50"
+              }`}
+              aria-label="Add to wishlist"
+            >
+              <Heart className={`w-4 h-4 ${isWishlisted ? "fill-white" : ""}`} />
+            </button>
+            <button
+              className="p-2.5 transition-colors border rounded-md border-zinc-200 text-zinc-500 hover:bg-zinc-50"
+              aria-label="Share product"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+          </div>
 
           {/* Trust Signals */}
-          <div className="grid grid-cols-1 gap-3 mt-6 pt-6 border-t border-border">
-            <div className="flex items-center gap-3 text-sm">
-              <Truck className="w-5 h-5 text-brand" />
-              <div>
-                <p className="font-semibold">Free Shipping</p>
-                <p className="text-muted-foreground">On orders over $50</p>
+          <div className="pt-5 mt-auto space-y-3 border-t border-zinc-200">
+            {[
+              { icon: Truck, title: "Free Shipping", desc: "On orders over $50" },
+              { icon: Shield, title: "Secure Checkout", desc: "SSL encrypted payments" },
+              { icon: RefreshCw, title: "Easy Returns", desc: "30-day return policy" },
+            ].map((item) => (
+              <div key={item.title} className="flex items-center gap-3">
+                <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-zinc-100">
+                  <item.icon className="w-4 h-4 text-zinc-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-zinc-900">{item.title}</p>
+                  <p className="text-xs text-zinc-400">{item.desc}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <Shield className="w-5 h-5 text-brand" />
-              <div>
-                <p className="font-semibold">Secure Checkout</p>
-                <p className="text-muted-foreground">SSL encrypted</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <RefreshCw className="w-5 h-5 text-brand" />
-              <div>
-                <p className="font-semibold">Easy Returns</p>
-                <p className="text-muted-foreground">30-day return policy</p>
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="mt-16" aria-labelledby="related-heading">
-          <h2 id="related-heading" className="text-2xl lg:text-3xl font-bold mb-8">
-            Related Products
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map((relatedProduct) => (
-              <ProductCard key={relatedProduct.id} product={relatedProduct} />
+        <section className="pt-12 border-t border-zinc-200" aria-labelledby="related-heading">
+          <div className="mb-8">
+            <h2 id="related-heading" className="text-h2 text-zinc-900">
+              You May Also Like
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {relatedProducts.map((relatedProduct, i) => (
+              <ProductCard key={relatedProduct.id} product={relatedProduct} index={i} />
             ))}
           </div>
         </section>

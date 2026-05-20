@@ -12,6 +12,7 @@ import {
   Package,
   LogOut,
   ChevronDown,
+  ArrowRight,
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
@@ -21,224 +22,326 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
   const cartItemCount = useCartStore((state) => state.getItemCount());
   const { user, logout } = useAuthStore();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = (isMobileMenuOpen || isSearchOpen) ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobileMenuOpen, isSearchOpen]);
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Shop" },
-    { href: "/products", label: "Categories" },
     { href: "/about", label: "About" },
   ];
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      window.location.href = `/products?search=${encodeURIComponent(searchQuery.trim())}`;
+      setSearchQuery("");
+      setIsSearchOpen(false);
+    }
+  };
+
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? "glass shadow-lg shadow-slate-900/5"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex items-center justify-center w-10 h-10 transition-shadow shadow-lg rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/25 group-hover:shadow-indigo-500/40">
-              <span className="text-lg font-bold text-white">Q</span>
-            </div>
-            <span className="text-xl font-bold text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text">
-              Store.pk
-            </span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="items-center hidden gap-1 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href + link.label}
-                href={link.href}
-                className="relative px-4 py-2 text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white group"
-              >
-                {link.label}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 group-hover:w-6 transition-all duration-300 rounded-full" />
-              </Link>
-            ))}
-          </nav>
-
-          {/* Right Actions */}
-          <div className="flex items-center gap-2">
-            {/* Search */}
-            <div className="relative hidden sm:block">
-              <motion.div
-                animate={isSearchOpen ? { width: 240 } : { width: 44 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden"
-              >
-                <div className="relative">
-                  <Search className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    onFocus={() => setIsSearchOpen(true)}
-                    onBlur={() => setIsSearchOpen(false)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-0 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                  />
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Cart */}
-            <Link
-              href="/cart"
-              className="relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors group"
-            >
-              <ShoppingCart className="w-5 h-5 transition-colors text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white" />
-              {cartItemCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow-lg shadow-rose-500/25"
-                >
-                  {cartItemCount}
-                </motion.span>
-              )}
+    <>
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? "glass" : "bg-white/80"
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-500">
+                <span className="text-xs font-bold text-white">Q</span>
+              </div>
+              <span className="text-sm font-semibold tracking-tight text-zinc-900">
+                Store.pk
+              </span>
             </Link>
 
-            {/* Profile */}
-            <div className="relative hidden sm:block">
-              <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-              >
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                {user && (
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200 max-w-[80px] truncate">
-                    {user.name}
-                  </span>
-                )}
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              <AnimatePresence>
-                {isProfileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 w-56 mt-2 overflow-hidden shadow-xl glass rounded-xl shadow-slate-900/10"
-                  >
-                    <div className="p-2">
-                      {user ? (
-                        <>
-                          <div className="px-3 py-2.5 border-b border-slate-200 dark:border-slate-700">
-                            <p className="text-sm font-medium text-slate-900 dark:text-white">{user.name}</p>
-                            <p className="text-xs truncate text-slate-500 dark:text-slate-400">{user.email}</p>
-                          </div>
-                          <Link
-                            href="/orders"
-                            className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                            onClick={() => setIsProfileOpen(false)}
-                          >
-                            <Package className="w-4 h-4" />
-                            My Orders
-                          </Link>
-                          <button
-                            onClick={() => { logout(); setIsProfileOpen(false); }}
-                            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            Sign Out
-                          </button>
-                        </>
-                      ) : (
-                        <Link
-                          href="/login"
-                          className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <User className="w-4 h-4" />
-                          Sign In
-                        </Link>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-              ) : (
-                <Menu className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="border-t md:hidden glass border-slate-200 dark:border-slate-800"
-          >
-            <div className="px-4 py-4 space-y-1">
-              {/* Mobile Search */}
-              <div className="relative mb-4">
-                <Search className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  className="w-full py-3 pl-10 pr-4 text-sm border-0 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                />
-              </div>
-
+            {/* Desktop Nav */}
+            <nav className="items-center hidden gap-6 md:flex">
               {navLinks.map((link) => (
                 <Link
-                  key={link.href + link.label + "-mobile"}
+                  key={link.href + link.label}
                   href={link.href}
-                  className="block px-4 py-3 text-base font-medium transition-colors text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-sm font-medium transition-colors text-zinc-500 hover:text-indigo-600"
                 >
                   {link.label}
                 </Link>
               ))}
+            </nav>
 
-              {!user && (
-                <Link
-                  href="/login"
-                  className="flex items-center justify-center w-full gap-2 px-4 py-3 mt-4 font-medium text-white transition-all bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25"
-                  onClick={() => setIsMobileMenuOpen(false)}
+            {/* Right Actions */}
+            <div className="flex items-center gap-1">
+              {/* Search */}
+              <div className="relative hidden sm:block">
+                <AnimatePresence>
+                  {isSearchOpen ? (
+                    <motion.form
+                      initial={{ opacity: 0, width: 36 }}
+                      animate={{ opacity: 1, width: 240 }}
+                      exit={{ opacity: 0, width: 36 }}
+                      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                      onSubmit={handleSearch}
+                      className="overflow-hidden"
+                    >
+                      <div className="relative">
+                        <Search className="absolute w-3.5 h-3.5 -translate-y-1/2 left-3 top-1/2 text-zinc-400" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search..."
+                          autoFocus
+                          className="w-full py-1.5 pl-9 pr-8 text-sm border rounded-md bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 focus:border-zinc-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
+                          className="absolute p-0.5 -translate-y-1/2 right-2 top-1/2 rounded hover:bg-zinc-200"
+                        >
+                          <X className="w-3 h-3 text-zinc-400" />
+                        </button>
+                      </div>
+                    </motion.form>
+                  ) : (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      onClick={() => setIsSearchOpen(true)}
+                      className="p-2 transition-colors rounded-md hover:bg-zinc-100"
+                    >
+                      <Search className="w-4 h-4 text-zinc-500" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Cart */}
+              <Link
+                href="/cart"
+                className="relative p-2 transition-colors rounded-md hover:bg-zinc-100"
+              >
+                <ShoppingCart className="w-4 h-4 text-zinc-500" />
+                {isMounted && cartItemCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute flex items-center justify-center -top-0.5 -right-0.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white text-[10px] font-medium rounded-full min-w-[16px] h-4 px-0.5"
+                  >
+                    {cartItemCount}
+                  </motion.span>
+                )}
+              </Link>
+
+              {/* Profile */}
+              <div className="relative hidden sm:block">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-1.5 p-1.5 pr-2 transition-colors rounded-md hover:bg-zinc-100"
                 >
-                  <User className="w-5 h-5" />
-                  Sign In
-                </Link>
-              )}
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100">
+                    <User className="w-3.5 h-3.5 text-zinc-600" />
+                  </div>
+                  {user && (
+                    <span className="text-xs font-medium truncate max-w-[60px] text-zinc-600">
+                      {user.name}
+                    </span>
+                  )}
+                  <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 4, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 w-52 mt-1 overflow-hidden bg-white border rounded-lg shadow-lg border-zinc-200 z-50"
+                      >
+                        <div className="p-1">
+                          {user ? (
+                            <>
+                              <div className="px-3 py-2 border-b border-zinc-100">
+                                <p className="text-xs font-medium text-zinc-900">{user.name}</p>
+                                <p className="text-[11px] truncate text-zinc-500">{user.email}</p>
+                              </div>
+                              <Link
+                                href="/orders"
+                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <Package className="w-3.5 h-3.5" />
+                                My Orders
+                              </Link>
+                              <Link
+                                href="/profile"
+                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
+                                onClick={() => setIsProfileOpen(false)}
+                              >
+                                <User className="w-3.5 h-3.5" />
+                                Profile
+                              </Link>
+                              <button
+                                onClick={() => { logout(); setIsProfileOpen(false); }}
+                                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-red-600 hover:bg-red-50"
+                              >
+                                <LogOut className="w-3.5 h-3.5" />
+                                Sign Out
+                              </button>
+                            </>
+                          ) : (
+                            <Link
+                              href="/login"
+                              className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-xs font-medium text-white transition-colors rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
+                              onClick={() => setIsProfileOpen(false)}
+                            >
+                              <User className="w-3.5 h-3.5" />
+                              Sign In
+                            </Link>
+                          )}
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Mobile Toggle */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 transition-colors rounded-md md:hidden hover:bg-zinc-100"
+                aria-label="Toggle menu"
+              >
+                <AnimatePresence mode="wait">
+                  {isMobileMenuOpen ? (
+                    <motion.div
+                      key="x"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <X className="w-4 h-4 text-zinc-600" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="menu"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Menu className="w-4 h-4 text-zinc-600" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="border-t md:hidden bg-white border-zinc-200"
+            >
+              <div className="px-6 py-4 space-y-1">
+                <form onSubmit={handleSearch} className="relative mb-3">
+                  <Search className="absolute w-3.5 h-3.5 -translate-y-1/2 left-3 top-1/2 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full py-2 pl-9 pr-4 text-sm border rounded-md bg-zinc-50 border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                  />
+                </form>
+
+                {navLinks.map((link, i) => (
+                  <motion.div
+                    key={link.href + link.label}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                  >
+                    <Link
+                      href={link.href}
+                      className="block px-3 py-2 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ))}
+
+                {user && (
+                  <Link
+                    href="/orders"
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Package className="w-4 h-4" />
+                    My Orders
+                  </Link>
+                )}
+
+                <div className="pt-3 mt-3 border-t border-zinc-100">
+                  {!user ? (
+                    <Link
+                      href="/login"
+                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition-colors rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign In
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-md text-red-600 hover:bg-red-50"
+                    >
+                      Sign Out
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+
+      <div className="h-16" />
+    </>
   );
 }
