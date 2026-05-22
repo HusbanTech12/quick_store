@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
@@ -10,7 +10,7 @@ import { ArrowLeft, Save, Package, Upload, Image as ImageIcon, X } from "lucide-
 
 export default function NewProductPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { success, error: showError } = useToast();
 
   const [loading, setLoading] = useState(false);
@@ -118,8 +118,13 @@ export default function NewProductPage() {
     }
   };
 
-  if (!user) {
-    router.push("/");
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/");
+    }
+  }, [isLoaded, user, router]);
+
+  if (!isLoaded || !user) {
     return null;
   }
 
