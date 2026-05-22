@@ -175,6 +175,12 @@ function OrdersContent() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/login?redirect_url=" + encodeURIComponent(window.location.pathname));
+    }
+  }, [isLoaded, user, router]);
+
   if (!isLoaded) return null;
   if (!user) return null;
 

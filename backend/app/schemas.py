@@ -119,6 +119,12 @@ class ProductResponse(ProductBase):
     id: uuid.UUID
     is_active: bool = True
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProductDetailResponse(ProductResponse):
     images: List[ProductImageResponse] = []
 
     class Config:

@@ -186,9 +186,7 @@ def get_products(
 
 
 def get_product(db: Session, product_id: uuid.UUID, include_inactive: bool = False) -> Optional[models.Product]:
-    query = db.query(models.Product).options(
-        joinedload(models.Product.images)
-    ).filter(models.Product.id == product_id)
+    query = db.query(models.Product).filter(models.Product.id == product_id)
     if not include_inactive:
         query = query.filter(models.Product.is_active.is_(True))
     return query.first()

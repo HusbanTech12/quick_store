@@ -30,7 +30,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     if (!isLoaded) return;
     if (!user) {
-      router.push("/login?redirect=/orders/" + resolvedParams.id);
+      router.push("/login?redirect_url=" + encodeURIComponent("/orders/" + resolvedParams.id));
       return;
     }
     const fetchOrder = async () => {

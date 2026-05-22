@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useUser, SignOutButton } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { ordersAPI } from "@/lib/api";
@@ -27,9 +28,16 @@ const fadeInUp = {
 
 function ProfileContent() {
   const { user, isLoaded } = useUser();
+  const router = useRouter();
   const { success } = useToast();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/login?redirect_url=" + encodeURIComponent("/profile"));
+    }
+  }, [isLoaded, user, router]);
 
   useEffect(() => {
     const fetchOrders = async () => {

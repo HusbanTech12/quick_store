@@ -61,19 +61,19 @@ def get_categories(db: Annotated[Session, Depends(get_db)]):
     return crud.get_categories(db)
 
 
-@router.get("/{product_id}", response_model=schemas.ProductResponse)
+@router.get("/{product_id}", response_model=schemas.ProductDetailResponse)
 def get_product(
     product_id: uuid.UUID,
     db: Annotated[Session, Depends(get_db)]
 ):
-    """Get product by ID"""
+    """Get product by ID with gallery images"""
     product = crud.get_product(db, product_id)
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
-    return schemas.ProductResponse.model_validate(product)
+    return schemas.ProductDetailResponse.model_validate(product)
 
 
 @router.post("", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)

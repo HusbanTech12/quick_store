@@ -39,7 +39,7 @@ export default function UploadsPage() {
 
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/");
+      router.push("/login?redirect_url=" + encodeURIComponent(window.location.pathname));
       return;
     }
     if (isLoaded && user) {

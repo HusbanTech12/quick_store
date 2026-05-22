@@ -4,10 +4,13 @@ import { SignIn } from "@clerk/nextjs";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Logo from "@/components/Logo";
 
 function SignInContent() {
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect_url") || "/";
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
       {/* Subtle Background */}
@@ -70,7 +73,7 @@ function SignInContent() {
               footerActionLink: "text-indigo-600 hover:text-indigo-700 font-semibold",
             },
           }}
-          fallbackRedirectUrl="/"
+          fallbackRedirectUrl={redirectUrl}
           signUpUrl="/register"
         />
       </motion.div>

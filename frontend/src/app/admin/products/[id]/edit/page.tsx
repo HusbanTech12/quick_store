@@ -37,7 +37,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (!user) {
-      router.push("/");
+      router.push("/login?redirect_url=" + encodeURIComponent(window.location.pathname));
       return;
     }
 

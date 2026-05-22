@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "@/components/ToastProvider";
@@ -25,6 +25,12 @@ function CheckoutContent() {
   const { user, isLoaded } = useUser();
   const { success, error: showError } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/login?redirect_url=" + encodeURIComponent("/checkout"));
+    }
+  }, [isLoaded, user, router]);
   const [loading, setLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
