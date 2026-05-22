@@ -10,12 +10,11 @@ CLERK_PUBLISHABLE_KEY = os.getenv(
     os.getenv("CLERK_PUBLISHABLE_KEY", ""),
 )
 
-# Allow explicit domain override (e.g. "literate-shark-72.clerk.accounts.dev")
 CLERK_DOMAIN_OVERRIDE = os.getenv("CLERK_DOMAIN", "")
 
-_jwks_cache: Optional[dict] = None
+_jwks_cache: dict = {}
 _jwks_cache_time: float = 0
-JWKS_CACHE_TTL = 3600  # 1 hour
+JWKS_CACHE_TTL = 3600
 
 
 def _get_clerk_domain() -> str:
@@ -31,29 +30,61 @@ def _get_clerk_domain() -> str:
             return decoded
         except Exception:
             pass
+    # Try the full key as a raw base64-encoded domain (Clerk live keys)
+    try:
+        import base64
+        decoded = base64.b64decode(CLERK_PUBLISHABLE_KEY).decode("utf-8")
+        if "." in decoded and " " not in decoded:
+            return decoded
+    except Exception:
+        pass
     return ""
 
 
-def get_jwks() -> dict:
+def _get_domain_from_token(token: str) -> str:
+    try:
+        unverified_payload = jwt.get_unverified_claims(token)
+        iss = unverified_payload.get("iss", "")
+        if iss:
+            return iss.replace("https://", "").rstrip("/")
+    except Exception:
+        pass
+    return ""
+
+
+def get_jwks(domain: Optional[str] = None) -> dict:
     global _jwks_cache, _jwks_cache_time
-    domain = _get_clerk_domain()
     if not domain:
-        raise ValueError("Clerk domain not found. Check NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.")
+        domain = _get_clerk_domain()
+    if not domain:
+        raise ValueError(
+            "Clerk domain not found. "
+            "Set CLERK_DOMAIN env var or NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY."
+        )
 
     now = time.time()
-    if _jwks_cache is None or (now - _jwks_cache_time) > JWKS_CACHE_TTL:
+    _cache_key = domain
+    cached = _jwks_cache.get(_cache_key)
+    if cached is None or (now - _jwks_cache_time) > JWKS_CACHE_TTL:
         url = f"https://{domain}/.well-known/jwks.json"
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
-        _jwks_cache = resp.json()
+        _jwks_cache[_cache_key] = resp.json()
         _jwks_cache_time = now
 
-    return _jwks_cache
+    return _jwks_cache[_cache_key]
 
 
 def verify_clerk_token(token: str) -> Optional[dict]:
     try:
-        jwks = get_jwks()
+        domain = _get_clerk_domain()
+        if not domain:
+            domain = _get_domain_from_token(token)
+        if not domain:
+            print("Clerk domain not found. Set CLERK_DOMAIN env var.")
+            return None
+
+        jwks = get_jwks(domain)
         unverified_header = jwt.get_unverified_header(token)
 
         rsa_key = {}
@@ -66,7 +97,6 @@ def verify_clerk_token(token: str) -> Optional[dict]:
             return None
 
         key = jwk.construct(rsa_key, algorithm=ALGORITHMS.RS256)
-        domain = _get_clerk_domain()
         payload = jwt.decode(
             token,
             key,
