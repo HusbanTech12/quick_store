@@ -51,7 +51,9 @@ async def get_current_user(
     # Try Clerk JWT first
     clerk_payload = verify_clerk_token(token)
     if clerk_payload:
-        email = clerk_payload.get("email") or clerk_payload.get("sub", "")
+        email = clerk_payload.get("email")
+        if not email or "@" not in email:
+            email = f'{clerk_payload.get("sub", "unknown")}@clerk.quickstore.local'
         name = clerk_payload.get("name", "")
 
         user = crud.get_user_by_email(db, email=email)
