@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   LogOut,
   Warehouse,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -42,6 +43,11 @@ const adminNavItems = [
     name: "Users",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    name: "Uploads",
+    href: "/admin/uploads",
+    icon: ImageIcon,
   },
 ];
 

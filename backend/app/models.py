@@ -43,6 +43,8 @@ class Product(Base):
     order_items = relationship("OrderItem", back_populates="product", cascade="all, delete-orphan")
     # Relationship to inventory logs
     inventory_logs = relationship("InventoryLog", back_populates="product", cascade="all, delete-orphan")
+    # Relationship to product images
+    images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan", order_by="ProductImage.sort_order")
 
 class Order(Base):
     __tablename__ = "orders"
@@ -98,3 +100,20 @@ class InventoryLog(Base):
     # Relationships
     product = relationship("Product", back_populates="inventory_logs")
     created_user = relationship("User")
+
+
+class ProductImage(Base):
+    __tablename__ = "product_images"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False, index=True)
+    secure_url = Column(String(500), nullable=False)
+    public_id = Column(String(255), nullable=False)
+    width = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True)
+    resource_type = Column(String(20), nullable=False, default="image")
+    is_primary = Column(Boolean, default=False, server_default="false")
+    sort_order = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    product = relationship("Product", back_populates="images")

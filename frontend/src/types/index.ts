@@ -23,6 +23,20 @@ export interface Token {
   token_type: "bearer";
 }
 
+// Product Image types
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  secure_url: string;
+  public_id: string;
+  width?: number;
+  height?: number;
+  resource_type: string;
+  is_primary: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
 // Product types
 export interface Product {
   id: string;
@@ -34,6 +48,7 @@ export interface Product {
   stock: number;
   is_featured?: boolean;
   created_at: string;
+  images: ProductImage[];
 }
 
 export interface ProductCreate {
@@ -66,7 +81,7 @@ export interface CartItem {
 export interface OrderItemCreate {
   product_id: string;
   quantity: number;
-  price?: number; // optional, can be derived from product
+  price?: number;
 }
 
 export interface OrderCreate {
@@ -109,7 +124,6 @@ export interface OrderSummary {
   payment_status?: string;
 }
 
-// API response wrappers
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -161,4 +175,42 @@ export interface BulkStockUpdateItem {
   product_id: string;
   stock: number;
   reorder_threshold?: number;
+}
+
+// Media/Upload types
+export interface MediaUploadResponse {
+  url: string;
+  public_id: string;
+  width?: number;
+  height?: number;
+  resource_type: string;
+  format?: string;
+  bytes?: number;
+}
+
+export interface MediaDeleteResponse {
+  success: boolean;
+  public_id: string;
+}
+
+export interface MediaItem {
+  public_id: string;
+  secure_url: string;
+  width?: number;
+  height?: number;
+  resource_type: string;
+  format?: string;
+  bytes?: number;
+  created_at?: string;
+}
+
+export interface MediaListResponse {
+  images: MediaItem[];
+  total_count: number;
+}
+
+export interface UploadStats {
+  total_images: number;
+  total_products_with_images: number;
+  total_gallery_images: number;
 }

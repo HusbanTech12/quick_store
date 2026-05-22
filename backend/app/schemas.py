@@ -57,6 +57,36 @@ class TokenData(BaseModel):
     email: Optional[str] = None
 
 
+# ========== Product Image Schemas ==========
+
+class ProductImageBase(BaseModel):
+    secure_url: str = Field(..., max_length=500)
+    public_id: str = Field(..., max_length=255)
+    width: Optional[int] = None
+    height: Optional[int] = None
+    resource_type: str = "image"
+    is_primary: bool = False
+    sort_order: int = 0
+
+
+class ProductImageCreate(ProductImageBase):
+    product_id: uuid.UUID
+
+
+class ProductImageUpdate(BaseModel):
+    is_primary: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+
+class ProductImageResponse(ProductImageBase):
+    id: uuid.UUID
+    product_id: uuid.UUID
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # ========== Product Schemas ==========
 
 class ProductBase(BaseModel):
@@ -89,6 +119,7 @@ class ProductResponse(ProductBase):
     id: uuid.UUID
     is_active: bool = True
     created_at: datetime
+    images: List[ProductImageResponse] = []
 
     class Config:
         from_attributes = True
@@ -228,3 +259,42 @@ class ProductInventoryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ========== Media/Upload Schemas ==========
+
+class MediaUploadResponse(BaseModel):
+    url: str
+    public_id: str
+    width: Optional[int] = None
+    height: Optional[int] = None
+    resource_type: str = "image"
+    format: Optional[str] = None
+    bytes: Optional[int] = None
+
+
+class MediaDeleteResponse(BaseModel):
+    success: bool
+    public_id: str
+
+
+class MediaItem(BaseModel):
+    public_id: str
+    secure_url: str
+    width: Optional[int] = None
+    height: Optional[int] = None
+    resource_type: str = "image"
+    format: Optional[str] = None
+    bytes: Optional[int] = None
+    created_at: Optional[str] = None
+
+
+class MediaListResponse(BaseModel):
+    images: List[MediaItem] = []
+    total_count: int = 0
+
+
+class UploadStats(BaseModel):
+    total_images: int
+    total_products_with_images: int
+    total_gallery_images: int

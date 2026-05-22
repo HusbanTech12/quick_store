@@ -14,6 +14,10 @@ import type {
   InventoryStats,
   StockAdjustment,
   BulkStockUpdateItem,
+  MediaUploadResponse,
+  MediaDeleteResponse,
+  MediaListResponse,
+  UploadStats,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -283,14 +287,49 @@ export const inventoryAPI = {
 // ========== Upload endpoints ==========
 
 export const uploadAPI = {
-  image: async (
-    file: File
-  ): Promise<AxiosResponse<{ url: string; public_id: string }>> => {
+  upload: async (
+    file: File,
+    folder?: string,
+    product_id?: string,
+    onProgress?: (percent: number) => void
+  ): Promise<AxiosResponse<MediaUploadResponse>> => {
     const formData = new FormData();
     formData.append("file", file);
-    return api.post("/upload/image", formData, {
+    const params: Record<string, string> = {};
+    if (folder) params.folder = folder;
+    if (product_id) params.product_id = product_id;
+    return api.post("/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      params,
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percent);
+        }
+      },
     });
+  },
+
+  delete: async (
+    public_id: string,
+    resource_type?: string
+  ): Promise<AxiosResponse<MediaDeleteResponse>> => {
+    return api.delete(`/upload/${public_id}`, {
+      params: { resource_type: resource_type || "image" },
+    });
+  },
+
+  list: async (
+    folder?: string,
+    max_results?: number
+  ): Promise<AxiosResponse<MediaListResponse>> => {
+    return api.get<MediaListResponse>("/upload/media", {
+      params: { folder: folder || "shop_pk", max_results: max_results || 100 },
+    });
+  },
+
+  stats: async (): Promise<AxiosResponse<UploadStats>> => {
+    return api.get<UploadStats>("/upload/stats");
   },
 };
 

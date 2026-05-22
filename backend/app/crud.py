@@ -149,7 +149,7 @@ def get_products(
 ) -> Tuple[List[models.Product], int]:
     """Return a list of products with pagination, filters and total count.
 
-    The query supports optional category, price range, free‑text search on title/description,
+    The query supports optional category, price range, free-text search on title/description,
     sorting by a whitelist of fields, and a flag to return only featured products.
     """
     query = db.query(models.Product)
@@ -175,7 +175,7 @@ def get_products(
 
     total = query.count()
 
-    # Apply sorting – only allow safe column names
+    # Apply sorting -- only allow safe column names
     sort_column = getattr(models.Product, sort_by, None)
     if sort_column is not None:
         order_func = desc if sort_order.lower() == "desc" else asc
@@ -186,7 +186,9 @@ def get_products(
 
 
 def get_product(db: Session, product_id: uuid.UUID, include_inactive: bool = False) -> Optional[models.Product]:
-    query = db.query(models.Product).filter(models.Product.id == product_id)
+    query = db.query(models.Product).options(
+        joinedload(models.Product.images)
+    ).filter(models.Product.id == product_id)
     if not include_inactive:
         query = query.filter(models.Product.is_active.is_(True))
     return query.first()
@@ -243,6 +245,98 @@ def get_categories(db: Session) -> List[str]:
     ).distinct().order_by(models.Product.category).all()
     return [c[0] for c in categories]
 
+# -------------------- Product Image CRUD --------------------
+
+def get_product_images(db: Session, product_id: uuid.UUID) -> List[models.ProductImage]:
+    """Get all images for a product, ordered by sort_order."""
+    return db.query(models.ProductImage).filter(
+        models.ProductImage.product_id == product_id
+    ).order_by(models.ProductImage.sort_order).all()
+
+
+def add_product_image(db: Session, image_data: schemas.ProductImageCreate) -> models.ProductImage:
+    """Add an image to a product's gallery."""
+    db_image = models.ProductImage(
+        id=uuid.uuid4(),
+        product_id=image_data.product_id,
+        secure_url=image_data.secure_url,
+        public_id=image_data.public_id,
+        width=image_data.width,
+        height=image_data.height,
+        resource_type=image_data.resource_type,
+        is_primary=image_data.is_primary,
+        sort_order=image_data.sort_order,
+    )
+    db.add(db_image)
+    db.commit()
+    db.refresh(db_image)
+    return db_image
+
+
+def update_product_image(
+    db: Session,
+    image_id: uuid.UUID,
+    image_update: schemas.ProductImageUpdate,
+) -> Optional[models.ProductImage]:
+    """Update a product image (e.g., set primary, change order)."""
+    db_image = db.query(models.ProductImage).filter(models.ProductImage.id == image_id).first()
+    if not db_image:
+        return None
+    for field, value in image_update.model_dump(exclude_unset=True).items():
+        setattr(db_image, field, value)
+    db.commit()
+    db.refresh(db_image)
+    return db_image
+
+
+def delete_product_image(db: Session, image_id: uuid.UUID) -> bool:
+    """Delete a product image from the database."""
+    result = db.query(models.ProductImage).filter(models.ProductImage.id == image_id).delete()
+    db.commit()
+    return bool(result)
+
+
+def delete_product_image_by_public_id(db: Session, public_id: str) -> bool:
+    """Delete a product image by Cloudinary public_id."""
+    result = db.query(models.ProductImage).filter(
+        models.ProductImage.public_id == public_id
+    ).delete()
+    db.commit()
+    return bool(result)
+
+
+def set_primary_image(db: Session, product_id: uuid.UUID, image_id: uuid.UUID) -> Optional[models.ProductImage]:
+    """Set one image as primary (unset others) for a product."""
+    db.query(models.ProductImage).filter(
+        models.ProductImage.product_id == product_id,
+        models.ProductImage.is_primary.is_(True),
+    ).update({"is_primary": False})
+
+    db_image = db.query(models.ProductImage).filter(
+        models.ProductImage.id == image_id,
+        models.ProductImage.product_id == product_id,
+    ).first()
+    if not db_image:
+        return None
+    db_image.is_primary = True
+    db.commit()
+    db.refresh(db_image)
+    return db_image
+
+
+def get_upload_stats(db: Session) -> dict:
+    """Get upload/media statistics."""
+    total_images = db.query(models.ProductImage).count()
+    total_products_with_images = db.query(models.ProductImage.product_id).distinct().count()
+    total_gallery_images = db.query(models.ProductImage).filter(
+        models.ProductImage.is_primary.is_(False)
+    ).count()
+    return {
+        "total_images": total_images,
+        "total_products_with_images": total_products_with_images,
+        "total_gallery_images": total_gallery_images,
+    }
+
 # -------------------- Order CRUD --------------------
 
 def create_order(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid.UUID] = None) -> models.Order:
@@ -271,7 +365,7 @@ def get_order(db: Session, order_id: uuid.UUID) -> Optional[models.Order]:
         joinedload(models.Order.items).joinedload(models.OrderItem.product)
     ).filter(models.Order.id == order_id).first()
 
-# -------------------- Payment‑related CRUD --------------------
+# -------------------- Payment-related CRUD --------------------
 
 def create_order_with_payment(db: Session, order: schemas.OrderCreate, user_id: Optional[uuid.UUID] = None) -> models.Order:
     total = 0.0

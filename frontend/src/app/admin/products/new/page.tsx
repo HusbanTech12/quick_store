@@ -6,7 +6,9 @@ import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { productsAPI, uploadAPI } from "@/lib/api";
 import Button from "@/components/Button";
-import { ArrowLeft, Save, Package, Upload, Image as ImageIcon, X } from "lucide-react";
+import MediaUploader from "@/components/MediaUploader";
+import { ArrowLeft, Save, Package, Upload, Image as ImageIcon, X, Plus } from "lucide-react";
+import type { ProductImage } from "@/types";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function NewProductPage() {
 
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showGalleryUploader, setShowGalleryUploader] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -25,6 +28,7 @@ export default function NewProductPage() {
     is_featured: false,
   });
 
+  const [galleryImages, setGalleryImages] = useState<ProductImage[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -107,7 +111,7 @@ export default function NewProductPage() {
     setUploading(true);
 
     try {
-      const res = await uploadAPI.image(file);
+      const res = await uploadAPI.upload(file);
       setFormData((prev) => ({ ...prev, image: res.data.url }));
       success("Image uploaded", "Image has been uploaded successfully");
     } catch (err: any) {
@@ -116,6 +120,29 @@ export default function NewProductPage() {
       setUploading(false);
       e.target.value = "";
     }
+  };
+
+  const handleGalleryComplete = (results: { url: string; public_id: string }[]) => {
+    const newImages: ProductImage[] = results.map((r, i) => ({
+      id: crypto.randomUUID(),
+      product_id: "",
+      secure_url: r.url,
+      public_id: r.public_id,
+      resource_type: "image",
+      is_primary: false,
+      sort_order: galleryImages.length + i,
+      created_at: new Date().toISOString(),
+    }));
+    setGalleryImages((prev) => [...prev, ...newImages]);
+    if (!formData.image && newImages.length > 0) {
+      setFormData((prev) => ({ ...prev, image: newImages[0].secure_url }));
+    }
+    setShowGalleryUploader(false);
+    success("Gallery updated", "Images added to gallery");
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   useEffect(() => {
@@ -262,10 +289,10 @@ export default function NewProductPage() {
             )}
           </div>
 
-          {/* Image Upload */}
+          {/* Thumbnail Image */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Product Image
+              Product Thumbnail
             </label>
             <div className="flex items-start gap-4">
               {formData.image ? (
@@ -318,6 +345,70 @@ export default function NewProductPage() {
                 placeholder="Or paste image URL: https://example.com/image.jpg"
               />
             </div>
+          </div>
+
+          {/* Gallery Images */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium">
+                Gallery Images
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowGalleryUploader(true)}
+                leftIcon={<Plus className="w-4 h-4" />}
+              >
+                Add Images
+              </Button>
+            </div>
+
+            {galleryImages.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-3">
+                {galleryImages.map((img, index) => (
+                  <div key={img.id} className="relative group">
+                    <img
+                      src={img.secure_url}
+                      alt={`Gallery ${index + 1}`}
+                      className="w-20 h-20 object-cover rounded-lg border border-border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(index)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showGalleryUploader && (
+              <div className="border border-border rounded-lg p-4 bg-muted/30">
+                <MediaUploader
+                  folder="shop_pk/products"
+                  onUploadComplete={handleGalleryComplete}
+                  className="mb-2"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowGalleryUploader(false)}
+                  className="mt-2"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+
+            {galleryImages.length === 0 && !showGalleryUploader && (
+              <p className="text-sm text-muted-foreground">
+                No gallery images yet. Click "Add Images" to add product photos.
+              </p>
+            )}
           </div>
 
           {/* Featured */}
