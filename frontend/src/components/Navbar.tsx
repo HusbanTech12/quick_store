@@ -39,12 +39,16 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [isMobileMenuOpen, isSearchOpen]);
 
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
+  const isAdmin = user?.emailAddresses?.[0]?.emailAddress === adminEmail;
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Shop" },
     { href: "/orders", label: "Orders" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
+    ...(isAdmin ? [{ href: "/admin", label: "Dashboard" }] : []),
   ];
 
   const handleSearch = (e: React.FormEvent) => {

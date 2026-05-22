@@ -95,12 +95,12 @@ export default function Header() {
             >
               Products
             </Link>
-            {user && (
+            {user && user.emailAddresses?.[0]?.emailAddress === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
               <Link
                 href="/admin"
                 className="text-foreground hover:text-brand font-medium transition-colors"
               >
-                Admin
+                Dashboard
               </Link>
             )}
           </nav>
@@ -183,20 +183,29 @@ export default function Header() {
 
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-2 animate-scale-in">
+                  {user.emailAddresses?.[0]?.emailAddress === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
                     <Link
-                      href="/profile"
+                      href="/admin"
                       className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      My Profile
+                      Dashboard
                     </Link>
-                    <Link
-                      href="/orders"
-                      className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      My Orders
-                    </Link>
+                  )}
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <Link
+                    href="/orders"
+                    className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    My Orders
+                  </Link>
                     <SignOutButton>
                       <button
                         onClick={() => setIsUserMenuOpen(false)}
@@ -286,13 +295,13 @@ export default function Header() {
               >
                 Products
               </Link>
-              {user && (
+              {user && user.emailAddresses?.[0]?.emailAddress === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
                 <Link
                   href="/admin"
                   className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Admin
+                  Dashboard
                 </Link>
               )}
               {user && (

@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
-from .. import schemas, crud
+from .. import schemas, crud, models
 from ..database import get_db
 from ..utils.email import email_service
 
@@ -54,6 +54,36 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return schemas.UserResponse.model_validate(user)
+
+
+@router.post("/seed-admin", response_model=schemas.UserResponse)
+def seed_admin(
+    user_data: schemas.UserCreate,
+    db: Session = Depends(get_db),
+    seed_key: str = Depends(lambda: os.getenv("SEED_ADMIN_KEY", "")),
+):
+    """Create the initial admin user (protected by SEED_ADMIN_KEY env var).
+    Only works once - subsequent calls return the existing admin."""
+    if not seed_key:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="SEED_ADMIN_KEY not configured on server"
+        )
+
+    existing = crud.get_user_by_email(db, user_data.email)
+    if existing:
+        if existing.is_admin:
+            return schemas.UserResponse.model_validate(existing)
+        existing.is_admin = True
+        db.commit()
+        db.refresh(existing)
+        return schemas.UserResponse.model_validate(existing)
+
+    db_user = crud.create_user(db, user_data)
+    db_user.is_admin = True
+    db.commit()
+    db.refresh(db_user)
+    return schemas.UserResponse.model_validate(db_user)
 
 
 @router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
