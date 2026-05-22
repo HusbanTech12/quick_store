@@ -70,7 +70,7 @@ function SignUpContent() {
               footerActionLink: "text-indigo-600 hover:text-indigo-700 font-semibold",
             },
           }}
-          forceRedirectUrl="/"
+          fallbackRedirectUrl="/"
           signInUrl="/login"
         />
       </motion.div>
