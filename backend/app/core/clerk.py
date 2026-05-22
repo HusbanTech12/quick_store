@@ -10,6 +10,8 @@ CLERK_PUBLISHABLE_KEY = os.getenv(
     os.getenv("CLERK_PUBLISHABLE_KEY", ""),
 )
 
+CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY", "")
+
 CLERK_DOMAIN_OVERRIDE = os.getenv("CLERK_DOMAIN", "")
 
 _jwks_cache: dict = {}
@@ -50,6 +52,34 @@ def _get_domain_from_token(token: str) -> str:
     except Exception:
         pass
     return ""
+
+
+def get_clerk_user_email(user_id: str) -> Optional[str]:
+    if not CLERK_SECRET_KEY:
+        return None
+    try:
+        resp = requests.get(
+            f"https://api.clerk.com/v1/users/{user_id}",
+            headers={"Authorization": f"Bearer {CLERK_SECRET_KEY}"},
+            timeout=10,
+        )
+        if resp.ok:
+            data = resp.json()
+            email_addr = data.get("email_address", "")
+            if email_addr and "@" in email_addr:
+                return email_addr
+            emails = data.get("email_addresses", [])
+            if emails:
+                primary = next(
+                    (e["email_address"] for e in emails if e.get("id") == data.get("primary_email_address_id")),
+                    None,
+                )
+                if primary:
+                    return primary
+                return emails[0].get("email_address")
+        return None
+    except Exception:
+        return None
 
 
 def get_jwks(domain: Optional[str] = None) -> dict:
@@ -104,6 +134,14 @@ def verify_clerk_token(token: str) -> Optional[dict]:
             issuer=f"https://{domain}",
             options={"verify_audience": False},
         )
+
+        if not payload.get("email"):
+            user_id = payload.get("sub", "")
+            if user_id:
+                email = get_clerk_user_email(user_id)
+                if email:
+                    payload["email"] = email
+
         return payload
     except (JWTError, Exception) as e:
         print(f"Clerk token verification failed: {e}")
