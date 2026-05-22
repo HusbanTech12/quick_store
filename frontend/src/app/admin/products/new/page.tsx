@@ -147,9 +147,9 @@ export default function NewProductPage() {
 
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/login?redirect_url=" + encodeURIComponent(window.location.pathname));
+      window.location.href = "/login?redirect_url=" + encodeURIComponent("/admin/products/new");
     }
-  }, [isLoaded, user, router]);
+  }, [isLoaded, user]);
 
   if (!isLoaded || !user) {
     return null;
