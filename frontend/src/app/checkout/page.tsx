@@ -28,7 +28,7 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/login?redirect_url=" + encodeURIComponent("/checkout"));
+      window.location.href = "/login?redirect_url=" + encodeURIComponent("/checkout");
     }
   }, [isLoaded, user, router]);
   const [loading, setLoading] = useState(false);

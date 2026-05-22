@@ -28,16 +28,16 @@ const fadeInUp = {
 
 function ProfileContent() {
   const { user, isLoaded } = useUser();
-  const router = useRouter();
   const { success } = useToast();
-  const [orders, setOrders] = useState<OrderSummary[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/login?redirect_url=" + encodeURIComponent("/profile"));
+      window.location.href = "/login?redirect_url=" + encodeURIComponent("/profile");
     }
   }, [isLoaded, user, router]);
+  const [orders, setOrders] = useState<OrderSummary[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {

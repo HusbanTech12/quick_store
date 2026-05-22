@@ -177,9 +177,9 @@ function OrdersContent() {
 
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/login?redirect_url=" + encodeURIComponent(window.location.pathname));
+      window.location.href = "/login?redirect_url=" + encodeURIComponent("/orders");
     }
-  }, [isLoaded, user, router]);
+  }, [isLoaded, user]);
 
   if (!isLoaded) return null;
   if (!user) return null;

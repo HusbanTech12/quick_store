@@ -24,12 +24,6 @@ import {
 function AdminDashboardContent() {
   const router = useRouter();
   const { user, isLoaded } = useUser();
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      router.push("/login?redirect_url=" + encodeURIComponent("/admin"));
-    }
-  }, [isLoaded, user, router]);
   const [inventoryStats, setInventoryStats] = useState<InventoryStats | null>(null);
   const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
