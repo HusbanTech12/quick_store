@@ -9,16 +9,26 @@ import {
   Menu,
   X,
   ArrowRight,
+  User,
+  LogOut,
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import { useUser, useAuth, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import Logo from "./Logo";
 
 export default function Navbar() {
+  const [isMounted, setIsMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const cartItemCount = useCartStore((state) => state.getItemCount());
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -135,7 +145,7 @@ export default function Navbar() {
                 className="relative p-2 transition-colors rounded-md hover:bg-zinc-100"
               >
                 <ShoppingCart className="w-4 h-4 text-zinc-500" />
-                {cartItemCount > 0 && (
+                {isMounted && cartItemCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -154,13 +164,39 @@ export default function Navbar() {
                 Orders
               </Link>
 
-              {/* Profile */}
-              <Link
-                href="/profile"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
-              >
-                Profile
-              </Link>
+              {/* Auth */}
+              <div className="hidden sm:flex items-center gap-2">
+                {isSignedIn ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      className="px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
+                    >
+                      Profile
+                    </Link>
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          userButtonAvatarBox: "w-7 h-7",
+                        },
+                      }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <SignInButton mode="modal">
+                      <button className="px-4 py-1.5 text-sm font-medium text-white transition-colors rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600">
+                        Sign In
+                      </button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                      <button className="px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100">
+                        Sign Up
+                      </button>
+                    </SignUpButton>
+                  </>
+                )}
+              </div>
 
               {/* Mobile Toggle */}
               <button

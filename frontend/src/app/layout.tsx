@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
 import { ToastProvider } from "@/components/ToastProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import Providers from "./providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,14 +30,16 @@ export default function RootLayout({
       className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ErrorBoundary>
-          <ToastProvider>
-            <Navbar />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-            <Chatbot />
-          </ToastProvider>
-        </ErrorBoundary>
+        <Providers>
+          <ErrorBoundary>
+            <ToastProvider>
+              <Navbar />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+              <Chatbot />
+            </ToastProvider>
+          </ErrorBoundary>
+        </Providers>
       </body>
     </html>
   );

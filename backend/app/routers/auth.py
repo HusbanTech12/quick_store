@@ -10,6 +10,7 @@ from jose import JWTError, jwt
 from .. import schemas, crud, models
 from ..database import get_db
 from ..utils.email import email_service
+from ..core.clerk import verify_clerk_token
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -18,8 +19,9 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
@@ -42,6 +44,29 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    if not token:
+        raise credentials_exception
+
+    # Try Clerk JWT first
+    clerk_payload = verify_clerk_token(token)
+    if clerk_payload:
+        email = clerk_payload.get("email") or clerk_payload.get("sub", "")
+        name = clerk_payload.get("name", "")
+
+        user = crud.get_user_by_email(db, email=email)
+        if user is None:
+            user = crud.create_user_from_clerk(db, email=email, name=name or email.split("@")[0])
+
+        # Auto-promote admin email
+        if ADMIN_EMAIL and email == ADMIN_EMAIL and not user.is_admin:
+            user.is_admin = True
+            db.commit()
+            db.refresh(user)
+
+        return schemas.UserResponse.model_validate(user)
+
+    # Fallback to custom JWT
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")

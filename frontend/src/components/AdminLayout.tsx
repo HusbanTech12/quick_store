@@ -1,7 +1,9 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Package,
@@ -10,7 +12,9 @@ import {
   ArrowLeft,
   Warehouse,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
+import { usersAPI } from "@/lib/api";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -51,6 +55,43 @@ const adminNavItems = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+  const [checking, setChecking] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      router.push("/sign-in");
+      return;
+    }
+
+    usersAPI
+      .getProfile()
+      .then((res) => {
+        if (!res.data.is_admin) {
+          router.push("/");
+        } else {
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => {
+        router.push("/");
+      })
+      .finally(() => setChecking(false));
+  }, [isSignedIn, router]);
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-muted/30">

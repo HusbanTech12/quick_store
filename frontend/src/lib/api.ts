@@ -29,9 +29,19 @@ const api = axios.create({
   },
 });
 
+import { getClerkToken } from "./clerk-token";
+
 // Attach token to requests if available
-api.interceptors.request.use((config) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+api.interceptors.request.use(async (config) => {
+  let token: string | null = null;
+
+  if (typeof window !== "undefined") {
+    token = getClerkToken();
+    if (!token) {
+      token = localStorage.getItem("token");
+    }
+  }
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -1,3 +1,4 @@
+import os
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, asc, desc, or_
 from typing import List, Optional, Tuple
@@ -28,6 +29,31 @@ def create_user(db: Session, user_data: schemas.UserCreate) -> models.User:
         email=user_data.email,
         hashed_password=hashed.decode("utf-8"),
         is_admin=False,
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
+
+
+def create_user_from_clerk(db: Session, email: str, name: str) -> models.User:
+    """Create a user from Clerk authentication (no password)."""
+    existing = get_user_by_email(db, email)
+    if existing:
+        return existing
+
+    import random
+    fake_password = uuid.uuid4().hex + str(random.randint(1000, 9999))
+    hashed = bcrypt.hashpw(fake_password.encode("utf-8"), bcrypt.gensalt())
+    db_user = models.User(
+        id=uuid.uuid4(),
+        name=name,
+        email=email,
+        hashed_password=hashed.decode("utf-8"),
+        is_admin=email == ADMIN_EMAIL if ADMIN_EMAIL else False,
     )
     db.add(db_user)
     db.commit()
