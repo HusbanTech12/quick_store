@@ -9,7 +9,6 @@ import CheckoutStepper from "@/components/CheckoutStepper";
 import EmptyState from "@/components/EmptyState";
 import StripeProvider from "@/components/StripeProvider";
 import PaymentForm from "@/components/PaymentForm";
-import { useUser } from "@clerk/nextjs";
 import { Check, MapPin, CreditCard, Package, Shield, Truck, ArrowLeft, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -22,21 +21,14 @@ const checkoutSteps = [
 function CheckoutContent() {
   const router = useRouter();
   const { items, getTotal, clearCart } = useCartStore();
-  const { user, isLoaded } = useUser();
   const { success, error: showError } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      window.location.href = "/login?redirect_url=" + encodeURIComponent("/checkout");
-    }
-  }, [isLoaded, user, router]);
   const [loading, setLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    shipping_name: user?.fullName || "",
-    shipping_email: user?.emailAddresses[0]?.emailAddress || "",
+    shipping_name: "",
+    shipping_email: "",
     shipping_address: "",
     shipping_city: "",
   });
@@ -128,8 +120,6 @@ function CheckoutContent() {
     showError("Payment failed", error);
   };
 
-  if (!isLoaded) return null;
-  if (!user) return null;
   if (items.length === 0) {
     return <EmptyState type="cart" />;
   }

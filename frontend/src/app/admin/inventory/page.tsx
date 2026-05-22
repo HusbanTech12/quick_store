@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { inventoryAPI, productsAPI } from "@/lib/api";
 import type { ProductInventory, InventoryStats, StockAdjustment } from "@/types";
@@ -29,7 +28,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 function InventoryContent() {
   const router = useRouter();
-  const { user } = useUser();
   const { success, error: showError } = useToast();
 
   const [products, setProducts] = useState<ProductInventory[]>([]);
@@ -127,8 +125,6 @@ function InventoryContent() {
     if (product.stock <= product.reorder_threshold) return { label: "Low Stock", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" };
     return { label: "In Stock", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" };
   };
-
-  if (!user) return <LoadingSpinner />;
 
   if (loading) {
     return (

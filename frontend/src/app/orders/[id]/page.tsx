@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ordersAPI } from "@/lib/api";
-import { useUser } from "@clerk/nextjs";
 import type { Order } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Package, MapPin, CreditCard, CheckCircle, Clock, XCircle, ArrowLeft, Mail, User, ChevronRight } from "lucide-react";
@@ -22,17 +21,11 @@ const staggerContainer = {
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const { user, isLoaded } = useUser();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!user) {
-      router.push("/login?redirect_url=" + encodeURIComponent("/orders/" + resolvedParams.id));
-      return;
-    }
     const fetchOrder = async () => {
       try {
         const response = await ordersAPI.getById(resolvedParams.id);
@@ -45,10 +38,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       }
     };
     fetchOrder();
-  }, [isLoaded, user, router, resolvedParams.id]);
-
-  if (!isLoaded) return null;
-  if (!user) return null;
+  }, [resolvedParams.id]);
 
   if (loading) {
     return (

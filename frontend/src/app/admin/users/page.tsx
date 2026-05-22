@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { usersAPI } from "@/lib/api";
 import type { User } from "@/types";
@@ -23,7 +22,6 @@ import {
 
 function AdminUsersContent() {
   const router = useRouter();
-  const { user } = useUser();
   const { success, error: showError } = useToast();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -88,10 +86,6 @@ function AdminUsersContent() {
 
     return matchesSearch && matchesRole;
   });
-
-  if (!user) {
-    return <LoadingSpinner />;
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12">
@@ -187,9 +181,7 @@ function AdminUsersContent() {
                         </div>
                         <div>
                           <p className="font-semibold">{u.name}</p>
-                          {u.id === user.id && (
-                            <span className="text-xs text-muted-foreground">(You)</span>
-                          )}
+
                         </div>
                       </div>
                     </td>
@@ -226,27 +218,25 @@ function AdminUsersContent() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        {u.id !== user.id && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleToggleAdmin(u.id, u.is_admin)}
-                              leftIcon={<Shield className="w-4 h-4" />}
-                            >
-                              {u.is_admin ? "Remove Admin" : "Make Admin"}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteUser(u.id, u.name)}
-                              leftIcon={<Trash2 className="w-4 h-4" />}
-                              className="text-error hover:text-error hover:bg-error/10"
-                            >
-                              Delete
-                            </Button>
-                          </>
-                        )}
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleAdmin(u.id, u.is_admin)}
+                            leftIcon={<Shield className="w-4 h-4" />}
+                          >
+                            {u.is_admin ? "Remove Admin" : "Make Admin"}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteUser(u.id, u.name)}
+                            leftIcon={<Trash2 className="w-4 h-4" />}
+                            className="text-error hover:text-error hover:bg-error/10"
+                          >
+                            Delete
+                          </Button>
+                        </>
                       </div>
                     </td>
                   </tr>

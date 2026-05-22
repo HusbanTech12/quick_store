@@ -46,11 +46,6 @@ api.interceptors.response.use(
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        // Only redirect if not already on login/register pages
-        const path = window.location.pathname;
-        if (!["/login", "/register"].includes(path)) {
-          window.location.href = "/login";
-        }
       }
     }
     return Promise.reject(error);

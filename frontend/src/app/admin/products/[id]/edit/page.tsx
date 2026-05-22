@@ -2,7 +2,6 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { productsAPI, uploadAPI } from "@/lib/api";
 import type { Product, ProductImage } from "@/types";
@@ -14,7 +13,6 @@ import { ArrowLeft, Save, Package, Upload, Image as ImageIcon, X, Plus } from "l
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const { user } = useUser();
   const { success, error: showError } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -36,11 +34,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (!user) {
-      router.push("/login?redirect_url=" + encodeURIComponent(window.location.pathname));
-      return;
-    }
-
     const fetchProduct = async () => {
       try {
         const response = await productsAPI.getById(resolvedParams.id);
@@ -65,7 +58,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     };
 
     fetchProduct();
-  }, [user, router, resolvedParams.id, showError]);
+  }, [resolvedParams.id, showError]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -180,10 +173,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const removeGalleryImage = (index: number) => {
     setGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
-
-  if (!user) {
-    return null;
-  }
 
   if (loading) {
     return <LoadingSpinner />;

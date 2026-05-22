@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { productsAPI, uploadAPI } from "@/lib/api";
 import Button from "@/components/Button";
@@ -12,7 +11,6 @@ import type { ProductImage } from "@/types";
 
 export default function NewProductPage() {
   const router = useRouter();
-  const { user, isLoaded } = useUser();
   const { success, error: showError } = useToast();
 
   const [loading, setLoading] = useState(false);
@@ -144,16 +142,6 @@ export default function NewProductPage() {
   const removeGalleryImage = (index: number) => {
     setGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      window.location.href = "/login?redirect_url=" + encodeURIComponent("/admin/products/new");
-    }
-  }, [isLoaded, user]);
-
-  if (!isLoaded || !user) {
-    return null;
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12 max-w-4xl">

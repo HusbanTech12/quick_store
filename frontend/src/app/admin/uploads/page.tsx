@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { uploadAPI } from "@/lib/api";
 import MediaUploader from "@/components/MediaUploader";
@@ -12,7 +11,6 @@ import { useToast } from "@/components/ToastProvider";
 import type { MediaItem, UploadStats } from "@/types";
 
 export default function UploadsPage() {
-  const { user, isLoaded } = useUser();
   const router = useRouter();
   const { success, error: showError } = useToast();
 
@@ -38,14 +36,8 @@ export default function UploadsPage() {
   };
 
   useEffect(() => {
-    if (isLoaded && !user) {
-      router.push("/login?redirect_url=" + encodeURIComponent(window.location.pathname));
-      return;
-    }
-    if (isLoaded && user) {
-      fetchMedia();
-    }
-  }, [isLoaded, user]);
+    fetchMedia();
+  }, []);
 
   const handleDelete = async (item: MediaItem) => {
     setDeleting(item.public_id);
@@ -72,9 +64,6 @@ export default function UploadsPage() {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
-
-  if (!isLoaded) return <LoadingSpinner />;
-  if (!user) return null;
 
   return (
     <div className="space-y-8">

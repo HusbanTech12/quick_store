@@ -2,14 +2,12 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useUser, SignOutButton } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Package,
   ShoppingBag,
   Users,
   ArrowLeft,
-  LogOut,
   Warehouse,
   Image as ImageIcon,
 } from "lucide-react";
@@ -53,7 +51,6 @@ const adminNavItems = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
-  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -105,22 +102,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back to Store</span>
             </Link>
-
-            {/* User Info */}
-            {user && (
-              <div className="mt-auto pt-6">
-                <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium truncate">{user.fullName}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user.emailAddresses[0]?.emailAddress}</p>
-                  <SignOutButton>
-                    <button className="mt-3 flex items-center gap-2 text-sm text-error hover:underline">
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                  </SignOutButton>
-                </div>
-              </div>
-            )}
           </div>
         </aside>
 

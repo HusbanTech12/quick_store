@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ordersAPI } from "@/lib/api";
-import { useUser } from "@clerk/nextjs";
 import type { OrderSummary, Order } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Package, Calendar, ShoppingBag, ArrowRight, AlertCircle, ChevronDown, ChevronRight, CheckCircle, Clock, XCircle, MapPin, CreditCard, Eye } from "lucide-react";
@@ -150,8 +149,6 @@ function OrderDetails({ orderId }: { orderId: string }) {
 }
 
 function OrdersContent() {
-  const router = useRouter();
-  const { user, isLoaded } = useUser();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -170,19 +167,8 @@ function OrdersContent() {
       }
     };
 
-    if (user) {
-      fetchOrders();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      window.location.href = "/login?redirect_url=" + encodeURIComponent("/orders");
-    }
-  }, [isLoaded, user]);
-
-  if (!isLoaded) return null;
-  if (!user) return null;
+    fetchOrders();
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-50">

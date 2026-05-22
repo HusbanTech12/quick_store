@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import Button from "@/components/Button";
 import AdminLayout from "@/components/AdminLayout";
 import { inventoryAPI, ordersAPI } from "@/lib/api";
@@ -23,7 +22,6 @@ import {
 
 function AdminDashboardContent() {
   const router = useRouter();
-  const { user, isLoaded } = useUser();
   const [inventoryStats, setInventoryStats] = useState<InventoryStats | null>(null);
   const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -45,8 +43,6 @@ function AdminDashboardContent() {
     };
     fetchData();
   }, []);
-
-  if (!user) return null;
 
   const adminSections = [
     {
@@ -104,7 +100,7 @@ function AdminDashboardContent() {
               Admin Dashboard
             </h1>
             <p className="text-muted-foreground">
-              Welcome back, {user.fullName}
+              Welcome back, Admin
             </p>
           </div>
         </div>

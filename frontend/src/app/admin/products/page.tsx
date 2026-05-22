@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { productsAPI } from "@/lib/api";
 import type { Product } from "@/types";
@@ -22,7 +21,6 @@ import {
 
 function AdminProductsContent() {
   const router = useRouter();
-  const { user } = useUser();
   const { success, error: showError } = useToast();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,10 +81,6 @@ function AdminProductsContent() {
     setLoading(true);
     fetchProducts();
   };
-
-  if (!user) {
-    return <LoadingSpinner />;
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12">

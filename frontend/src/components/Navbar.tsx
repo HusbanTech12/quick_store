@@ -6,25 +6,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart,
   Search,
-  User,
   Menu,
   X,
-  Package,
-  LogOut,
-  ChevronDown,
   ArrowRight,
-  Settings,
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
-import { useUser, SignOutButton } from "@clerk/nextjs";
 import Logo from "./Logo";
 
 export default function Navbar() {
-  const { user, isLoaded } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const cartItemCount = useCartStore((state) => state.getItemCount());
 
@@ -39,16 +31,13 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [isMobileMenuOpen, isSearchOpen]);
 
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
-  const isAdmin = user?.emailAddresses?.[0]?.emailAddress === adminEmail;
-
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Shop" },
     { href: "/orders", label: "Orders" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
-    ...(isAdmin ? [{ href: "/admin", label: "Dashboard" }] : []),
+    { href: "/admin", label: "Dashboard" },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -157,83 +146,21 @@ export default function Navbar() {
                 )}
               </Link>
 
-              {/* Profile */}
-              <div className="relative hidden sm:block">
-                {isLoaded ? (
-                  user ? (
-                    <>
-                      <button
-                        onClick={() => setIsProfileOpen(!isProfileOpen)}
-                        className="flex items-center gap-1.5 p-1.5 pr-2 transition-colors rounded-md hover:bg-zinc-100"
-                      >
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 overflow-hidden">
-                          {user.imageUrl ? (
-                            <img src={user.imageUrl} alt={user.fullName || ""} className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-3.5 h-3.5 text-white" />
-                          )}
-                        </div>
-                        <span className="text-xs font-medium truncate max-w-[60px] text-zinc-600">
-                          {user.firstName || user.emailAddresses[0]?.emailAddress}
-                        </span>
-                        <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
-                      </button>
+              {/* Orders */}
+              <Link
+                href="/orders"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
+              >
+                Orders
+              </Link>
 
-                      <AnimatePresence>
-                        {isProfileOpen && (
-                          <>
-                            <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
-                            <motion.div
-                              initial={{ opacity: 0, y: 4, scale: 0.98 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                              transition={{ duration: 0.15 }}
-                              className="absolute right-0 w-52 mt-1 overflow-hidden bg-white border rounded-lg shadow-lg border-zinc-200 z-50"
-                            >
-                              <div className="p-1">
-                                <div className="px-3 py-2 border-b border-zinc-100">
-                                  <p className="text-xs font-medium text-zinc-900">{user.fullName}</p>
-                                  <p className="text-[11px] truncate text-zinc-500">{user.emailAddresses[0]?.emailAddress}</p>
-                                </div>
-                                <Link
-                                  href="/orders"
-                                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
-                                  onClick={() => setIsProfileOpen(false)}
-                                >
-                                  <Package className="w-3.5 h-3.5" />
-                                  My Orders
-                                </Link>
-                                <Link
-                                  href="/profile"
-                                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
-                                  onClick={() => setIsProfileOpen(false)}
-                                >
-                                  <Settings className="w-3.5 h-3.5" />
-                                  Profile
-                                </Link>
-                                <SignOutButton>
-                                  <button className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-red-600 hover:bg-red-50">
-                                    <LogOut className="w-3.5 h-3.5" />
-                                    Sign Out
-                                  </button>
-                                </SignOutButton>
-                              </div>
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
-                    >
-                      <User className="w-4 h-4" />
-                      Sign In
-                    </Link>
-                  )
-                ) : null}
-              </div>
+              {/* Profile */}
+              <Link
+                href="/profile"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
+              >
+                Profile
+              </Link>
 
               {/* Mobile Toggle */}
               <button
@@ -308,27 +235,7 @@ export default function Navbar() {
                   </motion.div>
                 ))}
 
-                <div className="pt-3 mt-3 border-t border-zinc-100">
-                  {isLoaded && user ? (
-                    <SignOutButton>
-                      <button
-                        className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-md text-red-600 hover:bg-red-50"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Sign Out
-                      </button>
-                    </SignOutButton>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition-colors rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Sign In
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  )}
-                </div>
+
               </div>
             </motion.div>
           )}

@@ -4,53 +4,33 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
-import { useUser, SignOutButton } from "@clerk/nextjs";
 import {
   ShoppingCart,
   Search,
-  User,
-  LogOut,
   Menu,
   X,
-  ChevronDown,
 } from "lucide-react";
 import DarkModeToggle from "./DarkModeToggle";
 import Logo from "./Logo";
 
 export default function Header() {
   const cartItemCount = useCartStore((state) => state.getItemCount());
-  const { user } = useUser();
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Prevent hydration mismatch by only showing cart count after mount
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Focus search input when opened
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, [isSearchOpen]);
-
-  // Close user menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,11 +39,6 @@ export default function Header() {
       setSearchQuery("");
       setIsSearchOpen(false);
     }
-  };
-
-  const handleLogout = () => {
-    setIsUserMenuOpen(false);
-    router.push("/");
   };
 
   return (
@@ -95,14 +70,12 @@ export default function Header() {
             >
               Products
             </Link>
-            {user && user.emailAddresses?.[0]?.emailAddress === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
-              <Link
-                href="/admin"
-                className="text-foreground hover:text-brand font-medium transition-colors"
-              >
-                Dashboard
-              </Link>
-            )}
+            <Link
+              href="/admin"
+              className="text-foreground hover:text-brand font-medium transition-colors"
+            >
+              Dashboard
+            </Link>
           </nav>
 
           {/* Desktop Actions */}
@@ -167,65 +140,13 @@ export default function Header() {
               )}
             </Link>
 
-            {/* User Menu */}
-            {user ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors"
-                  aria-expanded={isUserMenuOpen}
-                  aria-haspopup="true"
-                >
-                  <User className="w-5 h-5" />
-                  <span className="text-sm font-medium">Hi, {user.fullName}</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-2 animate-scale-in">
-                  {user.emailAddresses?.[0]?.emailAddress === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
-                    <Link
-                      href="/admin"
-                      className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-                    onClick={() => setIsUserMenuOpen(false)}
-                  >
-                    My Profile
-                  </Link>
-                  <Link
-                    href="/orders"
-                    className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-                    onClick={() => setIsUserMenuOpen(false)}
-                  >
-                    My Orders
-                  </Link>
-                    <SignOutButton>
-                      <button
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-light transition-colors flex items-center gap-2 border-t border-border"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
-                    </SignOutButton>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="px-4 py-2 bg-brand text-brand-foreground rounded-lg hover:bg-brand-hover transition-colors font-medium text-sm"
-              >
-                Login
-              </Link>
-            )}
+            {/* Profile & Orders */}
+            <Link
+              href="/profile"
+              className="px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
+            >
+              Profile
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -258,7 +179,6 @@ export default function Header() {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden pb-4 animate-slide-in-down">
-            {/* Mobile Search */}
             <form onSubmit={handleSearch} className="mb-4">
               <div className="flex">
                 <input
@@ -279,7 +199,6 @@ export default function Header() {
               </div>
             </form>
 
-            {/* Mobile Navigation */}
             <nav className="space-y-2" aria-label="Mobile navigation">
               <Link
                 href="/"
@@ -295,55 +214,30 @@ export default function Header() {
               >
                 Products
               </Link>
-              {user && user.emailAddresses?.[0]?.emailAddress === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
-                <Link
-                  href="/admin"
-                  className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              )}
-              {user && (
-                <>
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    My Profile
-                  </Link>
-                  <Link
-                    href="/orders"
-                    className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    My Orders
-                  </Link>
-                </>
-              )}
+              <Link
+                href="/admin"
+                className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/profile"
+                className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Profile
+              </Link>
+              <Link
+                href="/orders"
+                className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Orders
+              </Link>
               <div className="pt-2 border-t border-border">
                 <DarkModeToggle />
               </div>
-              {user ? (
-                <SignOutButton>
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full text-left px-4 py-3 rounded-lg text-error hover:bg-error-light transition-colors font-medium flex items-center gap-2"
-                  >
-                    <LogOut className="w-5 h-5" />
-                    Logout
-                  </button>
-                </SignOutButton>
-              ) : (
-                <Link
-                  href="/login"
-                  className="block px-4 py-3 bg-brand text-brand-foreground rounded-lg hover:bg-brand-hover transition-colors font-medium text-center"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-              )}
             </nav>
           </div>
         )}

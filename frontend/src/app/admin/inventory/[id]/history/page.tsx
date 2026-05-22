@@ -2,7 +2,6 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { inventoryAPI } from "@/lib/api";
 import type { InventoryLog } from "@/types";
@@ -42,7 +41,6 @@ const changeTypeColors: Record<string, string> = {
 function HistoryContent({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const { user } = useUser();
   const { error: showError } = useToast();
 
   const [logs, setLogs] = useState<InventoryLog[]>([]);
@@ -65,8 +63,6 @@ function HistoryContent({ params }: { params: Promise<{ id: string }> }) {
   };
 
   const filteredLogs = filterType === "all" ? logs : logs.filter((log) => log.change_type === filterType);
-
-  if (!user) return <LoadingSpinner />;
 
   return (
     <AdminLayout>

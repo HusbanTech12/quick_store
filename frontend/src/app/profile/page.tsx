@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser, SignOutButton } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { ordersAPI } from "@/lib/api";
 import type { OrderSummary } from "@/types";
@@ -27,15 +26,8 @@ const fadeInUp = {
 };
 
 function ProfileContent() {
-  const { user, isLoaded } = useUser();
   const { success } = useToast();
   const router = useRouter();
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      window.location.href = "/login?redirect_url=" + encodeURIComponent("/profile");
-    }
-  }, [isLoaded, user, router]);
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
 
@@ -51,20 +43,8 @@ function ProfileContent() {
       }
     };
 
-    if (user) {
-      fetchOrders();
-    }
-  }, [user]);
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!user) return null;
+    fetchOrders();
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -87,29 +67,23 @@ function ProfileContent() {
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center overflow-hidden">
-                  {user.imageUrl ? (
-                    <img src={user.imageUrl} alt={user.fullName || ""} className="w-full h-full object-cover" />
-                  ) : (
-                    <UserIcon className="w-8 h-8 text-white" />
-                  )}
+                  <UserIcon className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-zinc-900">{user.fullName}</h2>
-                  <p className="text-sm text-zinc-500">{user.emailAddresses[0]?.emailAddress}</p>
+                  <h2 className="text-lg font-semibold text-zinc-900">User</h2>
+                  <p className="text-sm text-zinc-500">user@example.com</p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm text-zinc-600">
                   <Mail className="w-4 h-4 text-zinc-400" />
-                  <span>{user.emailAddresses[0]?.emailAddress}</span>
+                  <span>user@example.com</span>
                 </div>
-                {user.createdAt && (
-                  <div className="flex items-center gap-3 text-sm text-zinc-600">
-                    <Calendar className="w-4 h-4 text-zinc-400" />
-                    <span>Member since {new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-3 text-sm text-zinc-600">
+                  <Calendar className="w-4 h-4 text-zinc-400" />
+                  <span>Member since January 2024</span>
+                </div>
               </div>
 
               <div className="mt-6 pt-4 border-t border-zinc-100 space-y-2">
@@ -122,15 +96,7 @@ function ProfileContent() {
                     <ChevronRight className="w-4 h-4 text-zinc-400" />
                   </button>
                 </Link>
-                <SignOutButton>
-                  <button className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                    <span className="flex items-center gap-2">
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-red-400" />
-                  </button>
-                </SignOutButton>
+
               </div>
             </motion.div>
 
@@ -148,13 +114,7 @@ function ProfileContent() {
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-900">Security</h3>
               </div>
-              <p className="text-xs text-zinc-500 mb-4">Manage your password and security settings through your account dashboard.</p>
-              <Link href="https://accounts.clerk.dev/user/settings">
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors">
-                  <Settings className="w-4 h-4" />
-                  Account Settings
-                </button>
-              </Link>
+              <p className="text-xs text-zinc-500 mb-4">Manage your password and security settings.</p>
             </motion.div>
           </div>
 

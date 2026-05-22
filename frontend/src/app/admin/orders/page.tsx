@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { ordersAPI } from "@/lib/api";
 import type { OrderSummary } from "@/types";
@@ -21,7 +20,6 @@ import {
 
 function AdminOrdersContent() {
   const router = useRouter();
-  const { user } = useUser();
   const { error: showError } = useToast();
 
   const [orders, setOrders] = useState<OrderSummary[]>([]);
@@ -80,10 +78,6 @@ function AdminOrdersContent() {
     if (filterStatus === "all") return true;
     return order.payment_status === filterStatus;
   });
-
-  if (!user) {
-    return <LoadingSpinner />;
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12">
