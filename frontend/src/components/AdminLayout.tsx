@@ -56,13 +56,15 @@ const adminNavItems = [
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    if (!isLoaded) return;
+
     if (!isSignedIn) {
-      router.push("/sign-in");
+      router.replace("/sign-in");
       return;
     }
 
@@ -70,16 +72,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       .getProfile()
       .then((res) => {
         if (!res.data.is_admin) {
-          router.push("/");
+          router.replace("/");
         } else {
           setIsAdmin(true);
+          setChecking(false);
         }
       })
       .catch(() => {
-        router.push("/");
-      })
-      .finally(() => setChecking(false));
-  }, [isSignedIn, router]);
+        router.replace("/");
+        setChecking(false);
+      });
+  }, [isLoaded, isSignedIn, router]);
 
   if (checking) {
     return (

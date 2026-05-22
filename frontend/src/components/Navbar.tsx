@@ -13,7 +13,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
-import { useUser, useAuth, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { usersAPI } from "@/lib/api";
+import { useUser, useAuth, SignInButton, UserButton } from "@clerk/nextjs";
 import Logo from "./Logo";
 
 export default function Navbar() {
@@ -22,13 +23,24 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const cartItemCount = useCartStore((state) => state.getItemCount());
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      usersAPI.getProfile()
+        .then((res) => setIsAdminUser(res.data.is_admin))
+        .catch(() => setIsAdminUser(false));
+    } else if (isLoaded && !isSignedIn) {
+      setIsAdminUser(false);
+    }
+  }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -44,11 +56,13 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Shop" },
-    { href: "/orders", label: "Orders" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
-    { href: "/admin", label: "Dashboard" },
   ];
+
+  if (isAdminUser) {
+    navLinks.push({ href: "/admin", label: "Dashboard" });
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,14 +170,6 @@ export default function Navbar() {
                 )}
               </Link>
 
-              {/* Orders */}
-              <Link
-                href="/orders"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
-              >
-                Orders
-              </Link>
-
               {/* Auth */}
               <div className="hidden sm:flex items-center gap-2">
                 {isSignedIn ? (
@@ -184,16 +190,11 @@ export default function Navbar() {
                   </>
                 ) : (
                   <>
-                    <SignInButton mode="modal">
+                    <SignInButton mode="modal" forceRedirectUrl="/auth/callback">
                       <button className="px-4 py-1.5 text-sm font-medium text-white transition-colors rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600">
                         Sign In
                       </button>
                     </SignInButton>
-                    <SignUpButton mode="modal">
-                      <button className="px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100">
-                        Sign Up
-                      </button>
-                    </SignUpButton>
                   </>
                 )}
               </div>
