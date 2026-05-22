@@ -118,6 +118,11 @@ def update_order_status(
 
     try:
         updated_order = crud.update_order_status(db, order_id, status_update.order_status)
+
+        # Restore stock if order is cancelled
+        if status_update.order_status == "cancelled":
+            crud.restore_stock_for_order(db, order_id)
+
         return schemas.OrderResponse.model_validate(updated_order)
     except ValueError as e:
         raise HTTPException(

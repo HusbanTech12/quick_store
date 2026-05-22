@@ -172,3 +172,59 @@ class OrderSummary(BaseModel):
 
 class OrderStatusUpdate(BaseModel):
     order_status: str = Field(..., pattern="^(pending|processing|shipped|delivered|cancelled)$")
+
+
+# ========== Inventory Schemas ==========
+
+class InventoryLogResponse(BaseModel):
+    id: uuid.UUID
+    product_id: uuid.UUID
+    change_type: str
+    quantity_change: int
+    previous_stock: int
+    new_stock: int
+    notes: Optional[str] = None
+    reference_id: Optional[uuid.UUID] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class StockAdjustment(BaseModel):
+    quantity_change: int = Field(..., description="Positive to add stock, negative to remove")
+    change_type: str = Field(..., pattern="^(restock|adjustment|return|damage|cancellation)$")
+    notes: Optional[str] = None
+
+
+class BulkStockUpdateItem(BaseModel):
+    product_id: uuid.UUID
+    stock: int = Field(..., ge=0)
+    reorder_threshold: Optional[int] = Field(None, ge=0)
+
+
+class BulkStockUpdate(BaseModel):
+    items: List[BulkStockUpdateItem]
+
+
+class InventoryStats(BaseModel):
+    total_products: int
+    total_stock_value: float
+    low_stock_count: int
+    out_of_stock_count: int
+    overstock_count: int
+
+
+class ProductInventoryResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    category: str
+    price: float
+    stock: int
+    reorder_threshold: int
+    is_active: bool
+    image: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

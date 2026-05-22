@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
+import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { ordersAPI } from "@/lib/api";
 import type { OrderSummary } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
-import AuthGuard from "@/components/AuthGuard";
 import AdminLayout from "@/components/AdminLayout";
 import {
   ShoppingBag,
@@ -22,7 +21,7 @@ import {
 
 function AdminOrdersContent() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const { error: showError } = useToast();
 
   const [orders, setOrders] = useState<OrderSummary[]>([]);
@@ -82,7 +81,7 @@ function AdminOrdersContent() {
     return order.payment_status === filterStatus;
   });
 
-  if (!user || !user.is_admin) {
+  if (!user) {
     return <LoadingSpinner />;
   }
 
@@ -240,10 +239,8 @@ function AdminOrdersContent() {
 
 export default function AdminOrdersPage() {
   return (
-    <AuthGuard requireAuth requireAdmin>
-      <AdminLayout>
-        <AdminOrdersContent />
-      </AdminLayout>
-    </AuthGuard>
+    <AdminLayout>
+      <AdminOrdersContent />
+    </AdminLayout>
   );
 }

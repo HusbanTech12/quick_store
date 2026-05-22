@@ -9,6 +9,11 @@ import type {
   Order,
   OrderCreate,
   OrderSummary,
+  ProductInventory,
+  InventoryLog,
+  InventoryStats,
+  StockAdjustment,
+  BulkStockUpdateItem,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -215,6 +220,77 @@ export const stripeAPI = {
     sessionId: string
   ): Promise<AxiosResponse<{ payment_status: string; session: any }>> => {
     return api.get(`/stripe/session-status/${sessionId}`);
+  },
+};
+
+// ========== Inventory endpoints ==========
+
+export const inventoryAPI = {
+  getStats: async (): Promise<AxiosResponse<InventoryStats>> => {
+    return api.get<InventoryStats>("/inventory/stats");
+  },
+
+  getProducts: async (params?: {
+    skip?: number;
+    limit?: number;
+    low_stock?: boolean;
+    out_of_stock?: boolean;
+    category?: string;
+    search?: string;
+  }): Promise<AxiosResponse<ProductInventory[]>> => {
+    return api.get<ProductInventory[]>("/inventory/products", { params });
+  },
+
+  getLowStock: async (
+    skip?: number,
+    limit?: number
+  ): Promise<AxiosResponse<ProductInventory[]>> => {
+    return api.get<ProductInventory[]>("/inventory/low-stock", { params: { skip, limit } });
+  },
+
+  adjustStock: async (
+    productId: string,
+    adjustment: StockAdjustment
+  ): Promise<AxiosResponse<ProductInventory>> => {
+    return api.post<ProductInventory>(`/inventory/${productId}/adjust`, adjustment);
+  },
+
+  updateReorderThreshold: async (
+    productId: string,
+    reorder_threshold: number
+  ): Promise<AxiosResponse<ProductInventory>> => {
+    return api.post<ProductInventory>(`/inventory/${productId}/reorder-threshold`, { reorder_threshold });
+  },
+
+  getLogs: async (
+    productId: string,
+    params?: {
+      skip?: number;
+      limit?: number;
+      change_type?: string;
+    }
+  ): Promise<AxiosResponse<InventoryLog[]>> => {
+    return api.get<InventoryLog[]>(`/inventory/${productId}/logs`, { params });
+  },
+
+  bulkUpdate: async (
+    items: BulkStockUpdateItem[]
+  ): Promise<AxiosResponse<ProductInventory[]>> => {
+    return api.post<ProductInventory[]>("/inventory/bulk-update", { items });
+  },
+};
+
+// ========== Upload endpoints ==========
+
+export const uploadAPI = {
+  image: async (
+    file: File
+  ): Promise<AxiosResponse<{ url: string; public_id: string }>> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post("/upload/image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   },
 };
 

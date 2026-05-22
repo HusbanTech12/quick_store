@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
+import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
-import { productsAPI } from "@/lib/api";
+import { productsAPI, uploadAPI } from "@/lib/api";
 import Button from "@/components/Button";
-import { ArrowLeft, Save, Package } from "lucide-react";
+import { ArrowLeft, Save, Package, Upload, Image as ImageIcon, X } from "lucide-react";
 
 export default function NewProductPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const { success, error: showError } = useToast();
 
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -89,7 +90,35 @@ export default function NewProductPage() {
     }
   };
 
-  if (!user || !user.is_admin) {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showError("Invalid file", "Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showError("File too large", "Image must be less than 5MB");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const res = await uploadAPI.image(file);
+      setFormData((prev) => ({ ...prev, image: res.data.url }));
+      success("Image uploaded", "Image has been uploaded successfully");
+    } catch (err: any) {
+      showError("Upload failed", err?.response?.data?.detail || "Failed to upload image");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  if (!user) {
     router.push("/");
     return null;
   }
@@ -228,33 +257,62 @@ export default function NewProductPage() {
             )}
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
-            <label htmlFor="image" className="block text-sm font-medium mb-2">
-              Image URL
+            <label className="block text-sm font-medium mb-2">
+              Product Image
             </label>
-            <input
-              id="image"
-              name="image"
-              type="url"
-              value={formData.image}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
-              placeholder="https://example.com/image.jpg"
-            />
-            {formData.image && (
-              <div className="mt-3">
-                <p className="text-sm text-muted-foreground mb-2">Preview:</p>
-                <img
-                  src={formData.image}
-                  alt="Preview"
-                  className="w-32 h-32 object-cover rounded-lg border border-border"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
+            <div className="flex items-start gap-4">
+              {formData.image ? (
+                <div className="relative group">
+                  <img
+                    src={formData.image}
+                    alt="Product"
+                    className="w-32 h-32 object-cover rounded-lg border border-border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, image: "" }))}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex-1 space-y-3">
+                <label className="flex items-center justify-center w-full px-4 py-3 border border-border rounded-lg cursor-pointer hover:bg-muted transition-colors">
+                  <Upload className="w-4 h-4 mr-2" />
+                  <span className="text-sm font-medium">
+                    {uploading ? "Uploading..." : "Upload Image"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Upload an image or paste a URL below. Max 5MB.
+                </p>
               </div>
-            )}
+            </div>
+            <div className="mt-3">
+              <input
+                id="image"
+                name="image"
+                type="url"
+                value={formData.image}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand text-sm"
+                placeholder="Or paste image URL: https://example.com/image.jpg"
+              />
+            </div>
           </div>
 
           {/* Featured */}

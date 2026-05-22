@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
-import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/components/ToastProvider";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Shield, Tag, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 export default function CartPage() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore();
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const { success } = useToast();
   const total = getTotal();
 

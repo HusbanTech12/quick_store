@@ -117,3 +117,48 @@ export interface PaginatedResponse<T> {
   limit: number;
   total_pages: number;
 }
+
+// Inventory types
+export interface ProductInventory {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  stock: number;
+  reorder_threshold: number;
+  is_active: boolean;
+  image?: string;
+  created_at: string;
+}
+
+export interface InventoryLog {
+  id: string;
+  product_id: string;
+  change_type: "sale" | "restock" | "return" | "adjustment" | "damage" | "cancellation";
+  quantity_change: number;
+  previous_stock: number;
+  new_stock: number;
+  notes?: string;
+  reference_id?: string;
+  created_at: string;
+}
+
+export interface InventoryStats {
+  total_products: number;
+  total_stock_value: number;
+  low_stock_count: number;
+  out_of_stock_count: number;
+  overstock_count: number;
+}
+
+export interface StockAdjustment {
+  quantity_change: number;
+  change_type: "restock" | "adjustment" | "return" | "damage" | "cancellation";
+  notes?: string;
+}
+
+export interface BulkStockUpdateItem {
+  product_id: string;
+  stock: number;
+  reorder_threshold?: number;
+}

@@ -13,23 +13,20 @@ import {
   LogOut,
   ChevronDown,
   ArrowRight,
+  Settings,
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
-import { useAuthStore } from "@/store/authStore";
+import { useUser, SignOutButton } from "@clerk/nextjs";
+import Logo from "./Logo";
 
 export default function Navbar() {
+  const { user, isLoaded } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
   const cartItemCount = useCartStore((state) => state.getItemCount());
-  const { user, logout } = useAuthStore();
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -45,7 +42,9 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Shop" },
+    { href: "/orders", label: "Orders" },
     { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -70,12 +69,10 @@ export default function Navbar() {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-500">
-                <span className="text-xs font-bold text-white">Q</span>
-              </div>
-              <span className="text-sm font-semibold tracking-tight text-zinc-900">
-                Store.pk
+            <Link href="/" className="flex items-center gap-2.5">
+              <Logo className="w-8 h-8" />
+              <span className="text-base font-bold tracking-tight text-zinc-900">
+                Shop.pk
               </span>
             </Link>
 
@@ -145,7 +142,7 @@ export default function Navbar() {
                 className="relative p-2 transition-colors rounded-md hover:bg-zinc-100"
               >
                 <ShoppingCart className="w-4 h-4 text-zinc-500" />
-                {isMounted && cartItemCount > 0 && (
+                {cartItemCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -158,78 +155,80 @@ export default function Navbar() {
 
               {/* Profile */}
               <div className="relative hidden sm:block">
-                <button
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-1.5 p-1.5 pr-2 transition-colors rounded-md hover:bg-zinc-100"
-                >
-                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100">
-                    <User className="w-3.5 h-3.5 text-zinc-600" />
-                  </div>
-                  {user && (
-                    <span className="text-xs font-medium truncate max-w-[60px] text-zinc-600">
-                      {user.name}
-                    </span>
-                  )}
-                  <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                <AnimatePresence>
-                  {isProfileOpen && (
+                {isLoaded ? (
+                  user ? (
                     <>
-                      <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
-                      <motion.div
-                        initial={{ opacity: 0, y: 4, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-0 w-52 mt-1 overflow-hidden bg-white border rounded-lg shadow-lg border-zinc-200 z-50"
+                      <button
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                        className="flex items-center gap-1.5 p-1.5 pr-2 transition-colors rounded-md hover:bg-zinc-100"
                       >
-                        <div className="p-1">
-                          {user ? (
-                            <>
-                              <div className="px-3 py-2 border-b border-zinc-100">
-                                <p className="text-xs font-medium text-zinc-900">{user.name}</p>
-                                <p className="text-[11px] truncate text-zinc-500">{user.email}</p>
-                              </div>
-                              <Link
-                                href="/orders"
-                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
-                                onClick={() => setIsProfileOpen(false)}
-                              >
-                                <Package className="w-3.5 h-3.5" />
-                                My Orders
-                              </Link>
-                              <Link
-                                href="/profile"
-                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
-                                onClick={() => setIsProfileOpen(false)}
-                              >
-                                <User className="w-3.5 h-3.5" />
-                                Profile
-                              </Link>
-                              <button
-                                onClick={() => { logout(); setIsProfileOpen(false); }}
-                                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-red-600 hover:bg-red-50"
-                              >
-                                <LogOut className="w-3.5 h-3.5" />
-                                Sign Out
-                              </button>
-                            </>
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 overflow-hidden">
+                          {user.imageUrl ? (
+                            <img src={user.imageUrl} alt={user.fullName || ""} className="w-full h-full object-cover" />
                           ) : (
-                            <Link
-                              href="/login"
-                              className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-xs font-medium text-white transition-colors rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
-                              onClick={() => setIsProfileOpen(false)}
-                            >
-                              <User className="w-3.5 h-3.5" />
-                              Sign In
-                            </Link>
+                            <User className="w-3.5 h-3.5 text-white" />
                           )}
                         </div>
-                      </motion.div>
+                        <span className="text-xs font-medium truncate max-w-[60px] text-zinc-600">
+                          {user.firstName || user.emailAddresses[0]?.emailAddress}
+                        </span>
+                        <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {isProfileOpen && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
+                            <motion.div
+                              initial={{ opacity: 0, y: 4, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute right-0 w-52 mt-1 overflow-hidden bg-white border rounded-lg shadow-lg border-zinc-200 z-50"
+                            >
+                              <div className="p-1">
+                                <div className="px-3 py-2 border-b border-zinc-100">
+                                  <p className="text-xs font-medium text-zinc-900">{user.fullName}</p>
+                                  <p className="text-[11px] truncate text-zinc-500">{user.emailAddresses[0]?.emailAddress}</p>
+                                </div>
+                                <Link
+                                  href="/orders"
+                                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
+                                  onClick={() => setIsProfileOpen(false)}
+                                >
+                                  <Package className="w-3.5 h-3.5" />
+                                  My Orders
+                                </Link>
+                                <Link
+                                  href="/profile"
+                                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
+                                  onClick={() => setIsProfileOpen(false)}
+                                >
+                                  <Settings className="w-3.5 h-3.5" />
+                                  Profile
+                                </Link>
+                                <SignOutButton>
+                                  <button className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium transition-colors rounded-md text-red-600 hover:bg-red-50">
+                                    <LogOut className="w-3.5 h-3.5" />
+                                    Sign Out
+                                  </button>
+                                </SignOutButton>
+                              </div>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
                     </>
-                  )}
-                </AnimatePresence>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-100"
+                    >
+                      <User className="w-4 h-4" />
+                      Sign In
+                    </Link>
+                  )
+                ) : null}
               </div>
 
               {/* Mobile Toggle */}
@@ -305,19 +304,17 @@ export default function Navbar() {
                   </motion.div>
                 ))}
 
-                {user && (
-                  <Link
-                    href="/orders"
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md text-zinc-600 hover:bg-zinc-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Package className="w-4 h-4" />
-                    My Orders
-                  </Link>
-                )}
-
                 <div className="pt-3 mt-3 border-t border-zinc-100">
-                  {!user ? (
+                  {isLoaded && user ? (
+                    <SignOutButton>
+                      <button
+                        className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-md text-red-600 hover:bg-red-50"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Sign Out
+                      </button>
+                    </SignOutButton>
+                  ) : (
                     <Link
                       href="/login"
                       className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition-colors rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
@@ -326,13 +323,6 @@ export default function Navbar() {
                       Sign In
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
-                  ) : (
-                    <button
-                      onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-md text-red-600 hover:bg-red-50"
-                    >
-                      Sign Out
-                    </button>
                   )}
                 </div>
               </div>

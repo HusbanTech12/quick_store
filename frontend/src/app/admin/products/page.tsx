@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
+import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { productsAPI } from "@/lib/api";
 import type { Product } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
-import AuthGuard from "@/components/AuthGuard";
 import AdminLayout from "@/components/AdminLayout";
 import {
   Package,
@@ -23,7 +22,7 @@ import {
 
 function AdminProductsContent() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const { success, error: showError } = useToast();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -85,7 +84,7 @@ function AdminProductsContent() {
     fetchProducts();
   };
 
-  if (!user || !user.is_admin) {
+  if (!user) {
     return <LoadingSpinner />;
   }
 
@@ -317,10 +316,8 @@ function AdminProductsContent() {
 
 export default function AdminProductsPage() {
   return (
-    <AuthGuard requireAuth requireAdmin>
-      <AdminLayout>
-        <AdminProductsContent />
-      </AdminLayout>
-    </AuthGuard>
+    <AdminLayout>
+      <AdminProductsContent />
+    </AdminLayout>
   );
 }

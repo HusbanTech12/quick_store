@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
 import { ToastProvider } from "@/components/ToastProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import AuthProvider from "@/components/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,22 +25,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ErrorBoundary>
-          <AuthProvider>
+    <ClerkProvider>
+      <html
+        lang="en"
+        className={`${inter.variable} h-full antialiased`}
+      >
+        <body className="min-h-full flex flex-col bg-background text-foreground">
+          <ErrorBoundary>
             <ToastProvider>
               <Navbar />
               <main className="flex-grow">{children}</main>
               <Footer />
               <Chatbot />
             </ToastProvider>
-          </AuthProvider>
-        </ErrorBoundary>
-      </body>
-    </html>
+          </ErrorBoundary>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

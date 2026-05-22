@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
+import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/components/ToastProvider";
 import { usersAPI } from "@/lib/api";
 import type { User } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
-import AuthGuard from "@/components/AuthGuard";
 import AdminLayout from "@/components/AdminLayout";
 import {
   Users as UsersIcon,
@@ -24,7 +23,7 @@ import {
 
 function AdminUsersContent() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const { success, error: showError } = useToast();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -90,7 +89,7 @@ function AdminUsersContent() {
     return matchesSearch && matchesRole;
   });
 
-  if (!user || !user.is_admin) {
+  if (!user) {
     return <LoadingSpinner />;
   }
 
@@ -271,10 +270,8 @@ function AdminUsersContent() {
 
 export default function AdminUsersPage() {
   return (
-    <AuthGuard requireAuth requireAdmin>
-      <AdminLayout>
-        <AdminUsersContent />
-      </AdminLayout>
-    </AuthGuard>
+    <AdminLayout>
+      <AdminUsersContent />
+    </AdminLayout>
   );
 }

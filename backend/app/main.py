@@ -4,7 +4,7 @@ import os
 
 from .database import Base, engine
 from . import models
-from .routers import auth, users, products, orders, stripe, chat
+from .routers import auth, users, products, orders, stripe, chat, inventory, upload
 
 # Create tables on startup (for development; use alembic in production)
 if os.getenv("CREATE_TABLES_ON_STARTUP", "true").lower() == "true":
@@ -40,6 +40,8 @@ app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(stripe.router)
 app.include_router(chat.router)
+app.include_router(inventory.router)
+app.include_router(upload.router)
 
 
 @app.get("/health")

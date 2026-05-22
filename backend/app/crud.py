@@ -309,9 +309,20 @@ def create_order_with_payment(db: Session, order: schemas.OrderCreate, user_id: 
             price=itm["price"],
         )
         db.add(db_item)
-        # Decrease product stock
+        # Decrease product stock and log the change
         prod = get_product(db, itm["product_id"])
+        previous_stock = prod.stock
         prod.stock -= itm["quantity"]
+        log_inventory_change(
+            db=db,
+            product_id=itm["product_id"],
+            change_type="sale",
+            quantity_change=-itm["quantity"],
+            previous_stock=previous_stock,
+            new_stock=prod.stock,
+            notes=f"Order {db_order.id}",
+            reference_id=db_order.id,
+        )
     db.commit()
     db.refresh(db_order)
     return db_order
@@ -347,3 +358,205 @@ def update_order_status(db: Session, order_id: uuid.UUID, order_status: str) -> 
     db.commit()
     db.refresh(order)
     return order
+
+
+# -------------------- Inventory CRUD --------------------
+
+def log_inventory_change(
+    db: Session,
+    product_id: uuid.UUID,
+    change_type: str,
+    quantity_change: int,
+    previous_stock: int,
+    new_stock: int,
+    notes: Optional[str] = None,
+    reference_id: Optional[uuid.UUID] = None,
+    created_by: Optional[uuid.UUID] = None,
+) -> models.InventoryLog:
+    """Create an inventory log entry."""
+    log = models.InventoryLog(
+        id=uuid.uuid4(),
+        product_id=product_id,
+        change_type=change_type,
+        quantity_change=quantity_change,
+        previous_stock=previous_stock,
+        new_stock=new_stock,
+        notes=notes,
+        reference_id=reference_id,
+        created_by=created_by,
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+    return log
+
+
+def adjust_stock(
+    db: Session,
+    product_id: uuid.UUID,
+    quantity_change: int,
+    change_type: str,
+    notes: Optional[str] = None,
+    reference_id: Optional[uuid.UUID] = None,
+    created_by: Optional[uuid.UUID] = None,
+) -> models.Product:
+    """Adjust product stock and log the change."""
+    product = get_product(db, product_id, include_inactive=False)
+    if not product:
+        raise ValueError("Product not found")
+
+    previous_stock = product.stock
+    new_stock = previous_stock + quantity_change
+
+    if new_stock < 0:
+        raise ValueError(f"Cannot reduce stock below 0. Current stock: {previous_stock}")
+
+    product.stock = new_stock
+    log_inventory_change(
+        db=db,
+        product_id=product_id,
+        change_type=change_type,
+        quantity_change=quantity_change,
+        previous_stock=previous_stock,
+        new_stock=new_stock,
+        notes=notes,
+        reference_id=reference_id,
+        created_by=created_by,
+    )
+    db.commit()
+    db.refresh(product)
+    return product
+
+
+def get_inventory_logs(
+    db: Session,
+    product_id: Optional[uuid.UUID] = None,
+    change_type: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+) -> Tuple[List[models.InventoryLog], int]:
+    """Get inventory logs with optional filters."""
+    query = db.query(models.InventoryLog)
+    if product_id:
+        query = query.filter(models.InventoryLog.product_id == product_id)
+    if change_type:
+        query = query.filter(models.InventoryLog.change_type == change_type)
+
+    total = query.count()
+    logs = query.order_by(desc(models.InventoryLog.created_at)).offset(skip).limit(limit).all()
+    return logs, total
+
+
+def get_low_stock_products(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+) -> Tuple[List[models.Product], int]:
+    """Get products where stock is at or below reorder threshold."""
+    query = db.query(models.Product).filter(
+        models.Product.is_active.is_(True),
+        models.Product.stock <= models.Product.reorder_threshold
+    )
+    total = query.count()
+    products = query.order_by(asc(models.Product.stock)).offset(skip).limit(limit).all()
+    return products, total
+
+
+def get_inventory_stats(db: Session) -> dict:
+    """Get aggregate inventory statistics."""
+    total_products = db.query(models.Product).filter(
+        models.Product.is_active.is_(True)
+    ).count()
+
+    total_stock_value = db.query(
+        func.sum(models.Product.stock * models.Product.price)
+    ).filter(
+        models.Product.is_active.is_(True)
+    ).scalar() or 0.0
+
+    low_stock_count = db.query(models.Product).filter(
+        models.Product.is_active.is_(True),
+        models.Product.stock > 0,
+        models.Product.stock <= models.Product.reorder_threshold
+    ).count()
+
+    out_of_stock_count = db.query(models.Product).filter(
+        models.Product.is_active.is_(True),
+        models.Product.stock == 0
+    ).count()
+
+    overstock_count = db.query(models.Product).filter(
+        models.Product.is_active.is_(True),
+        models.Product.stock > models.Product.reorder_threshold * 5
+    ).count()
+
+    return {
+        "total_products": total_products,
+        "total_stock_value": total_stock_value,
+        "low_stock_count": low_stock_count,
+        "out_of_stock_count": out_of_stock_count,
+        "overstock_count": overstock_count,
+    }
+
+
+def bulk_update_stock(
+    db: Session,
+    items: list,
+    created_by: Optional[uuid.UUID] = None,
+) -> List[models.Product]:
+    """Update stock for multiple products at once."""
+    updated = []
+    for item in items:
+        product = get_product(db, item["product_id"], include_inactive=False)
+        if not product:
+            continue
+
+        previous_stock = product.stock
+        new_stock = item["stock"]
+        quantity_change = new_stock - previous_stock
+
+        if quantity_change != 0:
+            product.stock = new_stock
+            log_inventory_change(
+                db=db,
+                product_id=item["product_id"],
+                change_type="adjustment",
+                quantity_change=quantity_change,
+                previous_stock=previous_stock,
+                new_stock=new_stock,
+                notes="Bulk stock update",
+                created_by=created_by,
+            )
+
+        if "reorder_threshold" in item and item["reorder_threshold"] is not None:
+            product.reorder_threshold = item["reorder_threshold"]
+
+        db.commit()
+        db.refresh(product)
+        updated.append(product)
+
+    return updated
+
+
+def restore_stock_for_order(db: Session, order_id: uuid.UUID) -> None:
+    """Restore stock for all items in a cancelled order."""
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise ValueError("Order not found")
+
+    for item in order.items:
+        product = get_product(db, item.product_id, include_inactive=True)
+        if product:
+            previous_stock = product.stock
+            product.stock += item.quantity
+            log_inventory_change(
+                db=db,
+                product_id=item.product_id,
+                change_type="cancellation",
+                quantity_change=item.quantity,
+                previous_stock=previous_stock,
+                new_stock=product.stock,
+                notes=f"Stock restored from cancelled order {order_id}",
+                reference_id=order_id,
+            )
+    db.commit()

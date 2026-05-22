@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
-import AuthFormInput from "@/components/auth/AuthFormInput";
-import AuthPageLayout from "@/components/auth/AuthPageLayout";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -53,82 +51,104 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <AuthPageLayout
-      title="Forgot Password?"
-      subtitle="Enter your email and we'll send you a reset link"
-    >
-      {isSuccess ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-8"
-        >
-          <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-emerald-500" />
+    <div className="min-h-screen bg-zinc-50 flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md"
+      >
+        <div className="bg-white border border-zinc-200 rounded-xl p-8 shadow-sm">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-zinc-900 mb-1">Forgot Password?</h1>
+            <p className="text-sm text-zinc-500">Enter your email and we'll send you a reset link</p>
           </div>
-          <h3 className="text-xl font-bold text-foreground mb-2">Check Your Email</h3>
-          <p className="text-muted-foreground mb-6">
-            If an account exists with <strong>{email}</strong>, you'll receive a password reset link shortly.
-          </p>
-          <p className="text-sm text-muted-foreground mb-6">
-            Didn't receive the email? Check your spam folder or try again.
-          </p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => {
-                setIsSuccess(false);
-                setEmail("");
-              }}
-              className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-medium"
-            >
-              Try a different email
-            </button>
-            <Link
-              href="/login"
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-            >
-              Back to Login
-            </Link>
-          </div>
-        </motion.div>
-      ) : (
-        <>
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            <AuthFormInput
-              label="Email Address"
-              type="email"
-              id="forgot-email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              icon={<Mail className="w-4 h-4" />}
-              error={fieldError}
-              autoComplete="email"
-              disabled={isLoading}
-            />
 
-            <motion.button
-              type="submit"
-              disabled={isLoading}
-              whileHover={{ scale: isLoading ? 1 : 1.01 }}
-              whileTap={{ scale: isLoading ? 1 : 0.99 }}
-              className="relative w-full py-3.5 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/40 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-lg transition-all duration-300"
+          {isSuccess ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-8"
             >
-              {isLoading ? "Sending..." : "Send Reset Link"}
-            </motion.button>
-          </form>
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-emerald-500" />
+              </div>
+              <h3 className="text-xl font-bold text-zinc-900 mb-2">Check Your Email</h3>
+              <p className="text-sm text-zinc-500 mb-6">
+                If an account exists with <strong>{email}</strong>, you'll receive a password reset link shortly.
+              </p>
+              <p className="text-xs text-zinc-400 mb-6">
+                Didn't receive the email? Check your spam folder or try again.
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    setIsSuccess(false);
+                    setEmail("");
+                  }}
+                  className="text-indigo-600 hover:underline text-sm font-medium"
+                >
+                  Try a different email
+                </button>
+                <Link
+                  href="/login"
+                  className="text-zinc-500 hover:text-zinc-700 transition-colors text-sm"
+                >
+                  Back to Login
+                </Link>
+              </div>
+            </motion.div>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                <div>
+                  <label htmlFor="forgot-email" className="block text-sm font-medium text-zinc-700 mb-1.5">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="w-4 h-4 text-zinc-400" />
+                    </div>
+                    <input
+                      id="forgot-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setFieldError("");
+                      }}
+                      placeholder="you@example.com"
+                      className={`w-full pl-10 pr-4 py-3 border ${fieldError ? "border-red-300" : "border-zinc-200"} rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
+                      autoComplete="email"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {fieldError && <p className="mt-1 text-xs text-red-500">{fieldError}</p>}
+                </div>
 
-          <div className="mt-6 text-center">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Login
-            </Link>
-          </div>
-        </>
-      )}
-    </AuthPageLayout>
+                <motion.button
+                  type="submit"
+                  disabled={isLoading}
+                  whileHover={{ scale: isLoading ? 1 : 1.01 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.99 }}
+                  className="relative w-full py-3.5 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/40 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-lg transition-all duration-300"
+                >
+                  {isLoading ? "Sending..." : "Send Reset Link"}
+                </motion.button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Login
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </div>
   );
 }

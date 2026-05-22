@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useAuthStore } from "@/store/authStore";
+import { useUser, SignOutButton } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Package,
@@ -10,6 +10,7 @@ import {
   Users,
   ArrowLeft,
   LogOut,
+  Warehouse,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -28,6 +29,11 @@ const adminNavItems = [
     icon: Package,
   },
   {
+    name: "Inventory",
+    href: "/admin/inventory",
+    icon: Warehouse,
+  },
+  {
     name: "Orders",
     href: "/admin/orders",
     icon: ShoppingBag,
@@ -41,7 +47,7 @@ const adminNavItems = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -98,15 +104,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             {user && (
               <div className="mt-auto pt-6">
                 <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium truncate">{user.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                  <button
-                    onClick={logout}
-                    className="mt-3 flex items-center gap-2 text-sm text-error hover:underline"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Logout
-                  </button>
+                  <p className="text-sm font-medium truncate">{user.fullName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.emailAddresses[0]?.emailAddress}</p>
+                  <SignOutButton>
+                    <button className="mt-3 flex items-center gap-2 text-sm text-error hover:underline">
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </SignOutButton>
                 </div>
               </div>
             )}

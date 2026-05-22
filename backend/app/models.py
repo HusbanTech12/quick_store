@@ -34,12 +34,15 @@ class Product(Base):
     category = Column(String(100), nullable=False, index=True)
     image = Column(String(500), nullable=True)
     stock = Column(Integer, nullable=False, default=0)
+    reorder_threshold = Column(Integer, nullable=False, default=5, server_default="5")
     is_featured = Column(Boolean, default=False, server_default="false")
     is_active = Column(Boolean, default=True, server_default="true", nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationship to order items
     order_items = relationship("OrderItem", back_populates="product", cascade="all, delete-orphan")
+    # Relationship to inventory logs
+    inventory_logs = relationship("InventoryLog", back_populates="product", cascade="all, delete-orphan")
 
 class Order(Base):
     __tablename__ = "orders"
@@ -77,3 +80,21 @@ class OrderItem(Base):
     # Relationships
     order = relationship("Order", back_populates="items")
     product = relationship("Product", back_populates="order_items")
+
+class InventoryLog(Base):
+    __tablename__ = "inventory_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False, index=True)
+    change_type = Column(String(50), nullable=False, index=True)  # 'sale', 'restock', 'return', 'adjustment', 'cancellation'
+    quantity_change = Column(Integer, nullable=False)  # positive = added, negative = removed
+    previous_stock = Column(Integer, nullable=False)
+    new_stock = Column(Integer, nullable=False)
+    notes = Column(Text, nullable=True)
+    reference_id = Column(UUID(as_uuid=True), nullable=True, index=True)  # order_id, etc.
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+
+    # Relationships
+    product = relationship("Product", back_populates="inventory_logs")
+    created_user = relationship("User")

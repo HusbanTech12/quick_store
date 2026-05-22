@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
-import { useAuthStore } from "@/store/authStore";
+import { useUser, SignOutButton } from "@clerk/nextjs";
 import {
   ShoppingCart,
   Search,
@@ -15,10 +15,11 @@ import {
   ChevronDown,
 } from "lucide-react";
 import DarkModeToggle from "./DarkModeToggle";
+import Logo from "./Logo";
 
 export default function Header() {
   const cartItemCount = useCartStore((state) => state.getItemCount());
-  const { user, logout } = useAuthStore();
+  const { user } = useUser();
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,7 +62,6 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    logout();
     setIsUserMenuOpen(false);
     router.push("/");
   };
@@ -74,10 +74,11 @@ export default function Header() {
           {/* Logo */}
           <Link
             href="/"
-            className="text-2xl font-bold gradient-text hover:opacity-80 transition-opacity flex-shrink-0"
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity flex-shrink-0"
             aria-label="Shop.pk Home"
           >
-            Shop.pk
+            <Logo className="w-9 h-9" />
+            <span className="text-xl font-bold text-zinc-900">Shop.pk</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -94,7 +95,7 @@ export default function Header() {
             >
               Products
             </Link>
-            {user?.is_admin && (
+            {user && (
               <Link
                 href="/admin"
                 className="text-foreground hover:text-brand font-medium transition-colors"
@@ -176,7 +177,7 @@ export default function Header() {
                   aria-haspopup="true"
                 >
                   <User className="w-5 h-5" />
-                  <span className="text-sm font-medium">Hi, {user.name}</span>
+                  <span className="text-sm font-medium">Hi, {user.fullName}</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
 
@@ -196,22 +197,15 @@ export default function Header() {
                     >
                       My Orders
                     </Link>
-                    {user.is_admin && (
-                      <Link
-                        href="/admin"
-                        className="block px-4 py-2 text-sm hover:bg-muted transition-colors border-t border-border"
+                    <SignOutButton>
+                      <button
                         onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-light transition-colors flex items-center gap-2 border-t border-border"
                       >
-                        Admin Dashboard
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-light transition-colors flex items-center gap-2 border-t border-border"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </SignOutButton>
                   </div>
                 )}
               </div>
@@ -292,7 +286,7 @@ export default function Header() {
               >
                 Products
               </Link>
-              {user?.is_admin && (
+              {user && (
                 <Link
                   href="/admin"
                   className="block px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
@@ -323,16 +317,15 @@ export default function Header() {
                 <DarkModeToggle />
               </div>
               {user ? (
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-3 rounded-lg text-error hover:bg-error-light transition-colors font-medium flex items-center gap-2"
-                >
-                  <LogOut className="w-5 h-5" />
-                  Logout
-                </button>
+                <SignOutButton>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full text-left px-4 py-3 rounded-lg text-error hover:bg-error-light transition-colors font-medium flex items-center gap-2"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    Logout
+                  </button>
+                </SignOutButton>
               ) : (
                 <Link
                   href="/login"

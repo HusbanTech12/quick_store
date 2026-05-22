@@ -12,6 +12,7 @@ import {
   Linkedin,
   Facebook,
 } from "lucide-react";
+import Logo from "./Logo";
 
 const footerLinks = {
   company: [
@@ -54,17 +55,13 @@ export default function Footer() {
     <footer className="border-t border-zinc-200 bg-white">
       {/* Newsletter */}
       <div className="px-6 py-12 mx-auto max-w-7xl lg:px-8">
-        <div className="relative p-8 overflow-hidden border rounded-xl bg-zinc-900 border-zinc-800 sm:p-10">
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-violet-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-          
+        <div className="relative p-8 overflow-hidden border rounded-xl bg-zinc-50 border-zinc-200 sm:p-10">
           <div className="relative flex flex-col items-center justify-between gap-6 lg:flex-row">
             <div className="text-center lg:text-left">
-              <h3 className="mb-1 text-lg font-semibold text-white">
+              <h3 className="mb-1 text-lg font-semibold text-zinc-900">
                 Stay in the Loop
               </h3>
-              <p className="text-sm text-white/80">
+              <p className="text-sm text-zinc-500">
                 Subscribe for exclusive deals, new arrivals, and insider updates.
               </p>
             </div>
@@ -72,9 +69,9 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-2.5 text-sm border rounded-lg bg-white/5 border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 lg:w-64"
+                className="flex-1 px-4 py-2.5 text-sm border rounded-lg bg-white border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 focus:border-zinc-300 lg:w-64"
               />
-              <button className="flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-semibold text-white transition-all rounded-lg bg-indigo-500 hover:bg-indigo-600 whitespace-nowrap shadow-lg hover:-translate-y-0.5">
+              <button className="flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-semibold text-white transition-all rounded-lg bg-zinc-900 hover:bg-zinc-800 whitespace-nowrap shadow-lg shadow-zinc-900/20 hover:-translate-y-0.5">
                 Subscribe
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -88,12 +85,10 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex items-center justify-center w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-500">
-                <span className="text-xs font-bold text-white">Q</span>
-              </div>
-              <span className="text-sm font-semibold text-zinc-900">
-                Store.pk
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <Logo className="w-8 h-8" />
+              <span className="text-base font-bold text-zinc-900">
+                Shop.pk
               </span>
             </Link>
             <p className="mb-5 text-sm leading-relaxed text-zinc-500">
@@ -203,7 +198,7 @@ export default function Footer() {
       <div className="border-t border-zinc-200 bg-zinc-50/50">
         <div className="flex flex-col items-center justify-between gap-3 px-6 py-5 mx-auto max-w-7xl sm:flex-row lg:px-8">
           <p className="text-xs text-zinc-400">
-            &copy; {currentYear} Store.pk. All rights reserved.
+            &copy; {currentYear} Shop.pk. All rights reserved.
           </p>
           <p className="text-xs text-zinc-400">
             Crafted with precision for premium shopping.
