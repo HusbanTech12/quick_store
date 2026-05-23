@@ -38,7 +38,17 @@ api.interceptors.request.use(async (config) => {
   if (typeof window !== "undefined") {
     token = getClerkToken();
     if (!token) {
-      token = localStorage.getItem("token");
+      try {
+        token = localStorage.getItem("token");
+      } catch {}
+    }
+    if (!token) {
+      try {
+        const clerk = (window as any).Clerk;
+        if (clerk?.session) {
+          token = await clerk.session.getToken();
+        }
+      } catch {}
     }
   }
 

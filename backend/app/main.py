@@ -67,7 +67,7 @@ def health_check():
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to QuickStore E-commerce API",
+        "message": "Welcome to Store.pk E-commerce API",
         "docs": "/docs",
         "version": "1.0.0"
     }
