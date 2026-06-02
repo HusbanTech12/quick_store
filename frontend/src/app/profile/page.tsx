@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ToastProvider";
@@ -30,9 +30,13 @@ function ProfileContent() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    (async () => {
       try {
         const response = await ordersAPI.getAll(0, 5);
         setOrders(response.data);
@@ -41,9 +45,7 @@ function ProfileContent() {
       } finally {
         setOrdersLoading(false);
       }
-    };
-
-    fetchOrders();
+    })();
   }, []);
 
   return (

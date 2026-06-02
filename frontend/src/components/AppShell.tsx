@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const authPaths = ["/login", "/register"];
+const authPaths = ["/sign-in", "/sign-up"];
 
 export default function AppShell({
   children,

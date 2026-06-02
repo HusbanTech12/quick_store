@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import AdminLayout from "@/components/AdminLayout";
@@ -25,9 +25,13 @@ function AdminDashboardContent() {
   const [inventoryStats, setInventoryStats] = useState<InventoryStats | null>(null);
   const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    (async () => {
       try {
         const [statsRes, ordersRes] = await Promise.all([
           inventoryAPI.getStats(),
@@ -40,8 +44,7 @@ function AdminDashboardContent() {
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
+    })();
   }, []);
 
   const adminSections = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { uploadAPI } from "@/lib/api";
 import MediaUploader from "@/components/MediaUploader";
@@ -19,6 +19,7 @@ export default function UploadsPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [showUploader, setShowUploader] = useState(false);
+  const fetchedRef = useRef(false);
 
   const fetchMedia = async () => {
     try {
@@ -36,6 +37,8 @@ export default function UploadsPage() {
   };
 
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     fetchMedia();
   }, []);
 

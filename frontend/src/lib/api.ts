@@ -29,6 +29,19 @@ const api = axios.create({
   },
 });
 
+const dedupCache = new Map<string, Promise<any>>();
+const DEDUP_TTL = 500;
+
+function dedup<T>(key: string, factory: () => Promise<T>): Promise<T> {
+  const existing = dedupCache.get(key);
+  if (existing) return existing;
+
+  const promise = factory();
+  dedupCache.set(key, promise);
+  promise.finally(() => setTimeout(() => dedupCache.delete(key), DEDUP_TTL));
+  return promise;
+}
+
 import { getClerkToken } from "./clerk-token";
 
 // Attach token to requests if available
@@ -93,7 +106,7 @@ export const authAPI = {
   },
 
   me: async (): Promise<AxiosResponse<User>> => {
-    return api.get<User>("/auth/me");
+    return dedup("GET /auth/me", () => api.get<User>("/auth/me"));
   },
 };
 
@@ -101,7 +114,7 @@ export const authAPI = {
 
 export const usersAPI = {
   getProfile: async (): Promise<AxiosResponse<User>> => {
-    return api.get<User>("/users/me");
+    return dedup("GET /users/me", () => api.get<User>("/users/me"));
   },
 
   updateProfile: async (
@@ -121,7 +134,8 @@ export const usersAPI = {
     skip?: number,
     limit?: number
   ): Promise<AxiosResponse<User[]>> => {
-    return api.get<User[]>("/users", { params: { skip, limit } });
+    const key = "GET /users?" + JSON.stringify({ skip, limit });
+    return dedup(key, () => api.get<User[]>("/users", { params: { skip, limit } }));
   },
 
   updateUserRole: async (
@@ -150,15 +164,16 @@ export const productsAPI = {
     sort_order?: "asc" | "desc";
     featured_only?: boolean;
   }): Promise<AxiosResponse<Product[]>> => {
-    return api.get<Product[]>("/products", { params });
+    const key = "GET /products?" + JSON.stringify(params ?? {});
+    return dedup(key, () => api.get<Product[]>("/products", { params }));
   },
 
   getById: async (id: string): Promise<AxiosResponse<Product>> => {
-    return api.get<Product>(`/products/${id}`);
+    return dedup(`GET /products/${id}`, () => api.get<Product>(`/products/${id}`));
   },
 
   getCategories: async (): Promise<AxiosResponse<string[]>> => {
-    return api.get<string[]>("/products/categories");
+    return dedup("GET /products/categories", () => api.get<string[]>("/products/categories"));
   },
 
   create: async (
@@ -192,11 +207,12 @@ export const ordersAPI = {
     skip?: number,
     limit?: number
   ): Promise<AxiosResponse<OrderSummary[]>> => {
-    return api.get<OrderSummary[]>("/orders", { params: { skip, limit } });
+    const key = "GET /orders?" + JSON.stringify({ skip, limit });
+    return dedup(key, () => api.get<OrderSummary[]>("/orders", { params: { skip, limit } }));
   },
 
   getById: async (id: string): Promise<AxiosResponse<Order>> => {
-    return api.get<Order>(`/orders/${id}`);
+    return dedup(`GET /orders/${id}`, () => api.get<Order>(`/orders/${id}`));
   },
 
   updateStatus: async (
@@ -211,7 +227,8 @@ export const ordersAPI = {
     skip?: number,
     limit?: number
   ): Promise<AxiosResponse<OrderSummary[]>> => {
-    return api.get<OrderSummary[]>("/orders/admin/all", { params: { skip, limit } });
+    const key = "GET /orders/admin/all?" + JSON.stringify({ skip, limit });
+    return dedup(key, () => api.get<OrderSummary[]>("/orders/admin/all", { params: { skip, limit } }));
   },
 };
 
@@ -238,7 +255,7 @@ export const stripeAPI = {
   getSessionStatus: async (
     sessionId: string
   ): Promise<AxiosResponse<{ payment_status: string; session: any }>> => {
-    return api.get(`/stripe/session-status/${sessionId}`);
+    return dedup(`GET /stripe/session-status/${sessionId}`, () => api.get(`/stripe/session-status/${sessionId}`));
   },
 };
 
@@ -246,7 +263,7 @@ export const stripeAPI = {
 
 export const inventoryAPI = {
   getStats: async (): Promise<AxiosResponse<InventoryStats>> => {
-    return api.get<InventoryStats>("/inventory/stats");
+    return dedup("GET /inventory/stats", () => api.get<InventoryStats>("/inventory/stats"));
   },
 
   getProducts: async (params?: {
@@ -257,14 +274,16 @@ export const inventoryAPI = {
     category?: string;
     search?: string;
   }): Promise<AxiosResponse<ProductInventory[]>> => {
-    return api.get<ProductInventory[]>("/inventory/products", { params });
+    const key = "GET /inventory/products?" + JSON.stringify(params ?? {});
+    return dedup(key, () => api.get<ProductInventory[]>("/inventory/products", { params }));
   },
 
   getLowStock: async (
     skip?: number,
     limit?: number
   ): Promise<AxiosResponse<ProductInventory[]>> => {
-    return api.get<ProductInventory[]>("/inventory/low-stock", { params: { skip, limit } });
+    const key = "GET /inventory/low-stock?" + JSON.stringify({ skip, limit });
+    return dedup(key, () => api.get<ProductInventory[]>("/inventory/low-stock", { params: { skip, limit } }));
   },
 
   adjustStock: async (
@@ -289,7 +308,8 @@ export const inventoryAPI = {
       change_type?: string;
     }
   ): Promise<AxiosResponse<InventoryLog[]>> => {
-    return api.get<InventoryLog[]>(`/inventory/${productId}/logs`, { params });
+    const key = `GET /inventory/${productId}/logs?` + JSON.stringify(params ?? {});
+    return dedup(key, () => api.get<InventoryLog[]>(`/inventory/${productId}/logs`, { params }));
   },
 
   bulkUpdate: async (
@@ -338,13 +358,14 @@ export const uploadAPI = {
     folder?: string,
     max_results?: number
   ): Promise<AxiosResponse<MediaListResponse>> => {
-    return api.get<MediaListResponse>("/upload/media", {
+    const key = "GET /upload/media?" + JSON.stringify({ folder: folder || "shop_pk", max_results: max_results || 100 });
+    return dedup(key, () => api.get<MediaListResponse>("/upload/media", {
       params: { folder: folder || "shop_pk", max_results: max_results || 100 },
-    });
+    }));
   },
 
   stats: async (): Promise<AxiosResponse<UploadStats>> => {
-    return api.get<UploadStats>("/upload/stats");
+    return dedup("GET /upload/stats", () => api.get<UploadStats>("/upload/stats"));
   },
 };
 

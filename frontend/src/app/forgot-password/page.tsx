@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
                   Try a different email
                 </button>
                 <Link
-                  href="/login"
+                  href="/sign-in"
                   className="text-zinc-500 hover:text-zinc-700 transition-colors text-sm"
                 >
                   Back to Login
@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
 
               <div className="mt-6 text-center">
                 <Link
-                  href="/login"
+                  href="/sign-in"
                   className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />

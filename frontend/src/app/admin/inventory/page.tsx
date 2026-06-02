@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ToastProvider";
 import { inventoryAPI, productsAPI } from "@/lib/api";
@@ -46,8 +46,11 @@ function InventoryContent() {
   const [adjustQty, setAdjustQty] = useState("");
   const [adjustType, setAdjustType] = useState<StockAdjustment["change_type"]>("restock");
   const [adjustNotes, setAdjustNotes] = useState("");
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     fetchInventory();
     fetchCategories();
   }, []);

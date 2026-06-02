@@ -24,10 +24,16 @@ def log(msg: str):
     print(f"[clerk] {msg}", flush=True)
 
 
+_domain_cache: str | None = None
+
 def _get_clerk_domain() -> str:
+    global _domain_cache
+    if _domain_cache is not None:
+        return _domain_cache
     if CLERK_DOMAIN_OVERRIDE:
         log(f"using CLERK_DOMAIN override: {CLERK_DOMAIN_OVERRIDE}")
-        return CLERK_DOMAIN_OVERRIDE
+        _domain_cache = CLERK_DOMAIN_OVERRIDE
+        return _domain_cache
     if not CLERK_PUBLISHABLE_KEY:
         log("CLERK_PUBLISHABLE_KEY not set")
         return ""
@@ -36,32 +42,32 @@ def _get_clerk_domain() -> str:
         try:
             import base64
             decoded = base64.b64decode(parts[-1]).decode("utf-8")
-            log(f"domain from publishable key: {decoded}")
-            return decoded
+            _domain_cache = decoded
+            return _domain_cache
         except Exception:
             pass
     try:
         import base64
         decoded = base64.b64decode(CLERK_PUBLISHABLE_KEY).decode("utf-8")
         if "." in decoded and " " not in decoded:
-            log(f"domain from raw publishable key: {decoded}")
-            return decoded
+            _domain_cache = decoded
+            return _domain_cache
     except Exception:
         pass
     return ""
 
 
 def _get_domain_from_token(token: str) -> str:
+    global _domain_cache
     try:
         unverified_payload = jwt.get_unverified_claims(token)
         iss = unverified_payload.get("iss", "")
         if iss:
             domain = iss.replace("https://", "").rstrip("/")
-            log(f"domain from token iss: {domain}")
+            _domain_cache = domain
             return domain
-        log("no iss claim in token")
-    except Exception as e:
-        log(f"failed to extract claims from token: {e}")
+    except Exception:
+        pass
     return ""
 
 
@@ -143,12 +149,8 @@ def verify_token_via_clerk_api(token: str) -> Optional[dict]:
 
 
 def verify_clerk_token(token: str) -> Optional[dict]:
-    # Try Clerk API verification first (most reliable)
-    api_result = verify_token_via_clerk_api(token)
-    if api_result:
-        return api_result
-
-    # Fall back to JWKS-based verification
+    # Use JWKS-based verification (Clerk API verify endpoint is deprecated)
+    # JWKS verification is the recommended approach for server-side validation.
     try:
         domain = _get_clerk_domain()
         if not domain:
@@ -159,7 +161,6 @@ def verify_clerk_token(token: str) -> Optional[dict]:
 
         jwks = get_jwks(domain)
         unverified_header = jwt.get_unverified_header(token)
-        log(f"token kid: {unverified_header.get('kid')}")
 
         rsa_key = {}
         for key in jwks.get("keys", []):
@@ -179,7 +180,6 @@ def verify_clerk_token(token: str) -> Optional[dict]:
             issuer=f"https://{domain}",
             options={"verify_audience": False},
         )
-        log("token verified via JWKS")
 
         if not payload.get("email"):
             user_id = payload.get("sub", "")

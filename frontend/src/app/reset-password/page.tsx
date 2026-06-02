@@ -88,7 +88,7 @@ function ResetPasswordForm() {
 
       setIsSuccess(true);
       success("Password Reset!", "Your password has been reset successfully");
-      setTimeout(() => router.push("/login"), 2000);
+      setTimeout(() => router.push("/sign-in"), 2000);
     } catch (err: any) {
       const message = err?.response?.data?.detail || "Failed to reset password. Please try again.";
       showError("Reset Failed", message);
@@ -141,7 +141,7 @@ function ResetPasswordForm() {
               Request New Link
             </Link>
             <Link
-              href="/login"
+              href="/sign-in"
               className="text-zinc-500 hover:text-zinc-700 transition-colors text-sm"
             >
               Back to Login
@@ -168,7 +168,7 @@ function ResetPasswordForm() {
             Your password has been successfully reset. Redirecting you to login...
           </p>
           <Link
-            href="/login"
+            href="/sign-in"
             className="inline-block py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
           >
             Go to Login
@@ -288,7 +288,7 @@ function ResetPasswordForm() {
 
           <div className="mt-6 text-center">
             <Link
-              href="/login"
+              href="/sign-in"
               className="text-sm text-zinc-500 hover:text-zinc-700 transition-colors"
             >
               Back to Login

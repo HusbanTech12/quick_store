@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/Skeletons";
@@ -34,54 +34,14 @@ export default function ProductsClient() {
   // Pagination
   const [page, setPage] = useState(parseInt(searchParams.get("page") || "1", 10));
   const limit = 12;
-
-  const fetchProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params: {
-        skip: number;
-        limit: number;
-        sort_by: "created_at" | "price" | "title" | "stock";
-        sort_order: "asc" | "desc";
-        category?: string;
-        search?: string;
-        min_price?: number;
-        max_price?: number;
-        featured_only?: boolean;
-      } = {
-        skip: (page - 1) * limit,
-        limit,
-        sort_by: sortBy as "created_at" | "price" | "title" | "stock",
-        sort_order: sortOrder,
-      };
-
-      if (category) params.category = category;
-      if (search) params.search = search;
-      if (minPrice) params.min_price = parseFloat(minPrice);
-      if (maxPrice) params.max_price = parseFloat(maxPrice);
-      if (featuredOnly) params.featured_only = true;
-
-      const response = await productsAPI.getAll(params);
-      setProducts(response.data);
-      const totalCount = response.headers["x-total-count"];
-      if (totalCount) {
-        setTotal(parseInt(totalCount, 10));
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Failed to fetch products:", error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [page, category, search, minPrice, maxPrice, sortBy, sortOrder, featuredOnly]);
+  const categoriesFetched = useRef(false);
+  const productsKey = useRef("");
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (categoriesFetched.current) return;
+    categoriesFetched.current = true;
 
-  useEffect(() => {
-    async function fetchCategories() {
+    (async () => {
       try {
         const response = await productsAPI.getCategories();
         setCategories(response.data);
@@ -90,9 +50,42 @@ export default function ProductsClient() {
           console.error("Failed to fetch categories:", error);
         }
       }
-    }
-    fetchCategories();
+    })();
   }, []);
+
+  useEffect(() => {
+    const key = JSON.stringify([page, category, search, minPrice, maxPrice, sortBy, sortOrder, featuredOnly]);
+    if (productsKey.current === key) return;
+    productsKey.current = key;
+
+    (async () => {
+      try {
+        setLoading(true);
+        const params: Record<string, unknown> = {
+          skip: (page - 1) * limit,
+          limit,
+          sort_by: sortBy,
+          sort_order: sortOrder,
+        };
+        if (category) params.category = category;
+        if (search) params.search = search;
+        if (minPrice) params.min_price = parseFloat(minPrice);
+        if (maxPrice) params.max_price = parseFloat(maxPrice);
+        if (featuredOnly) params.featured_only = true;
+
+        const response = await productsAPI.getAll(params as any);
+        setProducts(response.data);
+        const totalCount = response.headers["x-total-count"];
+        if (totalCount) setTotal(parseInt(totalCount, 10));
+      } catch (error) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to fetch products:", error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [page, category, search, minPrice, maxPrice, sortBy, sortOrder, featuredOnly]);
 
   const applyFilters = () => {
     const params = new URLSearchParams();

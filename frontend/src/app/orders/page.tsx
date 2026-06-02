@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -153,9 +153,13 @@ function OrdersContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    (async () => {
       try {
         const response = await ordersAPI.getAll(0, 20);
         setOrders(response.data);
@@ -165,9 +169,7 @@ function OrdersContent() {
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchOrders();
+    })();
   }, []);
 
   return (

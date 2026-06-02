@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Package, Shield, CheckCircle, Laptop, Shirt, Home as HomeIcon, ChevronRight, Star, Quote, Zap, Users, Award } from "lucide-react";
 import Hero from "@/components/Hero";
@@ -73,8 +73,12 @@ export default function HomePage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
     async function fetchData() {
       try {
         setLoading(true);
