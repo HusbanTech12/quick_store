@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ToastProvider";
 import { productsAPI, uploadAPI } from "@/lib/api";
@@ -32,6 +32,15 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   const [galleryImages, setGalleryImages] = useState<ProductImage[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [categories, setCategories] = useState<string[]>([]);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const fetchedCatRef = useRef(false);
+
+  useEffect(() => {
+    if (fetchedCatRef.current) return;
+    fetchedCatRef.current = true;
+    productsAPI.getCategories().then((res) => setCategories(res.data)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -316,17 +325,54 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             <label htmlFor="category" className="block text-sm font-medium mb-2">
               Category *
             </label>
-            <input
-              id="category"
-              name="category"
-              type="text"
-              value={formData.category}
-              onChange={handleChange}
-              className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand ${
-                errors.category ? "border-error" : "border-border"
-              }`}
-              placeholder="e.g., Electronics, Clothing, Books"
-            />
+            {showNewCategory ? (
+              <div className="flex gap-2">
+                <input
+                  id="category"
+                  name="category"
+                  type="text"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className={`flex-1 px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand ${
+                    errors.category ? "border-error" : "border-border"
+                  }`}
+                  placeholder="Enter new category name"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => { setShowNewCategory(false); setFormData((prev) => ({ ...prev, category: "" })); }}
+                  className="px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className={`flex-1 px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand ${
+                    errors.category ? "border-error" : "border-border"
+                  }`}
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowNewCategory(true)}
+                  className="px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg shrink-0"
+                  title="Add new category"
+                >
+                  + New
+                </button>
+              </div>
+            )}
             {errors.category && (
               <p className="text-sm text-error mt-1">{errors.category}</p>
             )}

@@ -140,6 +140,7 @@ export interface OrderSummary {
   created_at: string;
   item_count: number;
   payment_status?: string;
+  order_status: string;
 }
 
 export interface PaginatedResponse<T> {

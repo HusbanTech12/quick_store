@@ -23,6 +23,7 @@ import {
   Check,
   X,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -46,6 +47,7 @@ function InventoryContent() {
   const [adjustQty, setAdjustQty] = useState("");
   const [adjustType, setAdjustType] = useState<StockAdjustment["change_type"]>("restock");
   const [adjustNotes, setAdjustNotes] = useState("");
+  const [adjusting, setAdjusting] = useState(false);
   const fetchedRef = useRef(false);
 
   useEffect(() => {
@@ -95,6 +97,7 @@ function InventoryContent() {
       return;
     }
 
+    setAdjusting(true);
     try {
       const change = adjustType === "restock" || adjustType === "return" ? Math.abs(qty) : -Math.abs(qty);
       await inventoryAPI.adjustStock(adjustModal.product.id, {
@@ -109,6 +112,8 @@ function InventoryContent() {
       fetchInventory();
     } catch (err: any) {
       showError("Update failed", err?.response?.data?.detail || "Could not adjust stock");
+    } finally {
+      setAdjusting(false);
     }
   };
 
@@ -424,15 +429,24 @@ function InventoryContent() {
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => setAdjustModal({ open: false, product: null })}
-                    className="flex-1 px-4 py-2.5 text-sm font-medium border border-border rounded-lg hover:bg-muted transition-colors"
+                    disabled={adjusting}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleAdjustStock}
-                    className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-hover transition-colors"
+                    disabled={adjusting}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    Update Stock
+                    {adjusting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Stock"
+                    )}
                   </button>
                 </div>
               </div>

@@ -13,6 +13,8 @@ import {
   Warehouse,
   Image as ImageIcon,
   Loader2,
+  Menu,
+  X,
 } from "lucide-react";
 import { usersAPI } from "@/lib/api";
 
@@ -59,6 +61,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { isSignedIn, isLoaded } = useAuth();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -98,11 +101,41 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="flex">
+      {/* Mobile header */}
+      <div className="lg:hidden flex items-center justify-between bg-card border-b border-border px-4 py-3 sticky top-0 z-40">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-brand to-accent rounded-lg flex items-center justify-center">
+            <LayoutDashboard className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-bold">Admin Panel</span>
+        </div>
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="p-2 rounded-lg hover:bg-muted transition-colors"
+        >
+          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      <div className="flex relative">
+        {/* Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className="w-64 bg-card border-r border-border min-h-screen sticky top-0">
+        <aside className={`
+          fixed lg:sticky top-0 lg:top-0 z-40 lg:z-auto
+          w-64 bg-card border-r border-border min-h-screen
+          transition-transform duration-300
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}>
           <div className="p-6">
-            <div className="flex items-center gap-2 mb-8">
+            {/* Desktop header */}
+            <div className="hidden lg:flex items-center gap-2 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-brand to-accent rounded-lg flex items-center justify-center">
                 <LayoutDashboard className="w-6 h-6 text-white" />
               </div>
@@ -112,16 +145,27 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
             </div>
 
+            {/* Mobile close */}
+            <div className="lg:hidden flex justify-end mb-4">
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-2 rounded-lg hover:bg-muted transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
             {/* Navigation */}
             <nav className="space-y-2">
               {adminNavItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href + "/"));
 
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                       isActive
                         ? "bg-brand text-white shadow-md"
@@ -150,7 +194,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 lg:p-8 min-w-0">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

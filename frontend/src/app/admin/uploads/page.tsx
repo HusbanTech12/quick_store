@@ -6,11 +6,12 @@ import { uploadAPI } from "@/lib/api";
 import MediaUploader from "@/components/MediaUploader";
 import Button from "@/components/Button";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import AdminLayout from "@/components/AdminLayout";
 import { Image as ImageIcon, Trash2, Film, HardDrive, BarChart3 } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
 import type { MediaItem, UploadStats } from "@/types";
 
-export default function UploadsPage() {
+function UploadsContent() {
   const router = useRouter();
   const { success, error: showError } = useToast();
 
@@ -19,6 +20,7 @@ export default function UploadsPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [showUploader, setShowUploader] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<MediaItem | null>(null);
   const fetchedRef = useRef(false);
 
   const fetchMedia = async () => {
@@ -43,10 +45,16 @@ export default function UploadsPage() {
   }, []);
 
   const handleDelete = async (item: MediaItem) => {
-    setDeleting(item.public_id);
+    setDeleteConfirm(item);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    setDeleting(deleteConfirm.public_id);
+    setDeleteConfirm(null);
     try {
-      await uploadAPI.delete(item.public_id, item.resource_type);
-      setMedia((prev) => prev.filter((m) => m.public_id !== item.public_id));
+      await uploadAPI.delete(deleteConfirm.public_id, deleteConfirm.resource_type);
+      setMedia((prev) => prev.filter((m) => m.public_id !== deleteConfirm.public_id));
       success("Deleted", "Media file has been deleted");
       fetchMedia();
     } catch {
@@ -208,6 +216,41 @@ export default function UploadsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setDeleteConfirm(null)} />
+          <div className="relative w-full max-w-sm bg-white rounded-xl shadow-xl border border-border p-6">
+            <h3 className="text-lg font-semibold mb-2">Delete Media</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Are you sure you want to delete this file? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium border border-border rounded-lg hover:bg-muted transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function UploadsPage() {
+  return (
+    <AdminLayout>
+      <UploadsContent />
+    </AdminLayout>
   );
 }
