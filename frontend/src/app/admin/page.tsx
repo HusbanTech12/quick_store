@@ -4,15 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import AdminLayout from "@/components/AdminLayout";
-import { inventoryAPI, ordersAPI } from "@/lib/api";
+import { inventoryAPI, ordersAPI, productsAPI } from "@/lib/api";
 import type { InventoryStats } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import {
-  LayoutDashboard,
   Package,
   ShoppingBag,
   Users,
-  TrendingUp,
   DollarSign,
   ShieldAlert,
   Warehouse,
@@ -23,6 +21,7 @@ import {
 function AdminDashboardContent() {
   const router = useRouter();
   const [inventoryStats, setInventoryStats] = useState<InventoryStats | null>(null);
+  const [productCount, setProductCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
@@ -33,12 +32,14 @@ function AdminDashboardContent() {
 
     (async () => {
       try {
-        const [statsRes, ordersRes] = await Promise.all([
+        const [statsRes, ordersRes, productsRes] = await Promise.all([
           inventoryAPI.getStats(),
-          ordersAPI.getAllAdmin(0, 1),
+          ordersAPI.getAllAdmin(0, 200),
+          productsAPI.getAll({ limit: 1 }),
         ]);
         setInventoryStats(statsRes.data);
-        setOrderCount(ordersRes.data.length > 0 ? ordersRes.headers["x-total-count"] ? parseInt(ordersRes.headers["x-total-count"]) : 0 : 0);
+        setOrderCount(ordersRes.data.length);
+        setProductCount(productsRes.headers["x-total-count"] ? parseInt(productsRes.headers["x-total-count"]) : productsRes.data.length);
       } catch {
         // silently fail
       } finally {
@@ -53,15 +54,15 @@ function AdminDashboardContent() {
       description: "Manage your product catalog",
       icon: Package,
       href: "/admin/products",
-      color: "brand",
-      stats: "Manage inventory",
+      chip: "brand",
+      stats: `${productCount} products`,
     },
     {
       title: "Inventory",
       description: "Track stock levels and adjustments",
       icon: Warehouse,
       href: "/admin/inventory",
-      color: "accent",
+      chip: "accent",
       stats: inventoryStats ? `${inventoryStats.low_stock_count} low stock alerts` : "View stock levels",
     },
     {
@@ -69,15 +70,15 @@ function AdminDashboardContent() {
       description: "View and manage customer orders",
       icon: ShoppingBag,
       href: "/admin/orders",
-      color: "success",
-      stats: "Track sales",
+      chip: "success",
+      stats: `${orderCount} total orders`,
     },
     {
       title: "Users",
       description: "Manage user accounts",
       icon: Users,
       href: "/admin/users",
-      color: "brand",
+      chip: "info",
       stats: "View customers",
     },
   ];
@@ -158,14 +159,22 @@ function AdminDashboardContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {adminSections.map((section) => {
             const Icon = section.icon;
+            const chipStyles: Record<string, string> = {
+              brand: "bg-brand-light text-brand",
+              accent: "bg-accent-light text-accent",
+              success: "bg-success-light text-success",
+              info: "bg-blue-100 text-blue-600",
+            };
+            const chip = chipStyles[section.chip] || "bg-muted text-muted-foreground";
+            const [chipBg, chipText] = chip.split(" ");
             return (
               <div
                 key={section.href}
                 onClick={() => router.push(section.href)}
                 className="bg-card border border-border rounded-xl shadow-sm p-5 hover:border-brand transition-all cursor-pointer group hover:shadow-lg"
               >
-                <div className={`p-2.5 bg-${section.color}-light rounded-lg inline-block mb-3 group-hover:scale-110 transition-transform`}>
-                  <Icon className={`w-6 h-6 text-${section.color}`} />
+                <div className={`p-2.5 ${chipBg} rounded-lg inline-block mb-3 group-hover:scale-110 transition-transform`}>
+                  <Icon className={`w-6 h-6 ${chipText}`} />
                 </div>
                 <h3 className="text-base font-bold mb-1">{section.title}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{section.description}</p>
