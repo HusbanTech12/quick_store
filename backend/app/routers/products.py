@@ -1,10 +1,10 @@
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi import Response
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 import uuid
 
-from .. import schemas, crud
+from .. import schemas, crud, models
 from ..database import get_db
 from ..routers.auth import get_current_user
 
@@ -100,7 +100,11 @@ def update_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
-    return schemas.ProductDetailResponse.model_validate(product)
+    # Refetch with eager-loaded images to ensure fresh serialized response
+    fresh = db.query(models.Product).options(
+        selectinload(models.Product.images)
+    ).filter(models.Product.id == product_id).first()
+    return schemas.ProductDetailResponse.model_validate(fresh)
 
 
 @router.post("/{product_id}/images", response_model=List[schemas.ProductImageResponse])

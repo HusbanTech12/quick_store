@@ -103,7 +103,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       success("Product updated", "Changes have been saved successfully");
       router.push("/admin/products");
     } catch (err: any) {
-      const message = err?.response?.data?.detail || "Failed to update product";
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === "string" ? detail
+        : Array.isArray(detail) ? detail.map((e: any) => e.msg || JSON.stringify(e)).join("; ")
+        : err?.message || "Failed to update product";
       showError("Update failed", message);
     } finally {
       setSaving(false);

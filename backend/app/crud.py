@@ -269,7 +269,8 @@ def update_product(
     if images_data is not None:
         db.query(models.ProductImage).filter(
             models.ProductImage.product_id == product_id
-        ).delete()
+        ).delete(synchronize_session='fetch')
+
         for i, img_data in enumerate(images_data):
             db_image = models.ProductImage(
                 id=uuid.uuid4(),
@@ -285,7 +286,7 @@ def update_product(
             db.add(db_image)
 
     db.commit()
-    db.refresh(db_product)
+    db.expire(db_product)
     return db_product
 
 
