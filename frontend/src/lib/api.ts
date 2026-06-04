@@ -2,6 +2,7 @@ import axios, { type AxiosResponse } from "axios";
 import type {
   Product,
   ProductCreate,
+  ProductImage,
   ProductUpdate,
   User,
   UserCreate,
@@ -191,6 +192,21 @@ export const productsAPI = {
 
   delete: async (id: string): Promise<void> => {
     return api.delete(`/products/${id}`);
+  },
+
+  addImages: async (
+    id: string,
+    images: Array<{
+      secure_url: string;
+      public_id: string;
+      width?: number;
+      height?: number;
+      resource_type: string;
+      is_primary?: boolean;
+      sort_order?: number;
+    }>
+  ): Promise<AxiosResponse<ProductImage[]>> => {
+    return api.post<ProductImage[]>(`/products/${id}/images`, images);
   },
 };
 

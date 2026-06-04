@@ -117,7 +117,11 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
 
   const isOutOfStock = product.stock === 0;
   const isLowStock = product.stock > 0 && product.stock <= 5;
-  const images = product.image ? [product.image, product.image, product.image, product.image] : [];
+  const allImages = [
+    ...(product.image ? [product.image] : []),
+    ...(product.images || []).map((img) => img.secure_url),
+  ];
+  const images = allImages.length > 0 ? allImages : [];
 
   return (
     <div className="mx-auto px-6 py-8 max-w-7xl lg:px-8 lg:py-12">

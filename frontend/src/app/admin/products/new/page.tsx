@@ -7,7 +7,7 @@ import { productsAPI, uploadAPI } from "@/lib/api";
 import Button from "@/components/Button";
 import MediaUploader from "@/components/MediaUploader";
 import { ArrowLeft, Save, Package, Upload, Image as ImageIcon, X, Plus } from "lucide-react";
-import type { ProductImage } from "@/types";
+import type { ProductImage, ProductCreate } from "@/types";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function NewProductPage() {
     setLoading(true);
 
     try {
-      const productData = {
+      const productData: ProductCreate = {
         title: formData.title,
         description: formData.description || undefined,
         price: parseFloat(formData.price),
@@ -59,6 +59,15 @@ export default function NewProductPage() {
         image: formData.image || undefined,
         stock: parseInt(formData.stock),
         is_featured: formData.is_featured,
+        images: galleryImages.length > 0
+          ? galleryImages.map((img, i) => ({
+              secure_url: img.secure_url,
+              public_id: img.public_id,
+              resource_type: img.resource_type,
+              is_primary: img.is_primary,
+              sort_order: img.sort_order ?? i,
+            }))
+          : undefined,
       };
 
       await productsAPI.create(productData);
@@ -139,7 +148,13 @@ export default function NewProductPage() {
     success("Gallery updated", "Images added to gallery");
   };
 
-  const removeGalleryImage = (index: number) => {
+  const removeGalleryImage = async (index: number) => {
+    const img = galleryImages[index];
+    if (img?.public_id) {
+      try {
+        await uploadAPI.delete(img.public_id);
+      } catch {}
+    }
     setGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
 

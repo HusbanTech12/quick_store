@@ -59,6 +59,15 @@ export interface ProductCreate {
   image?: string;
   stock: number;
   is_featured?: boolean;
+  images?: Array<{
+    secure_url: string;
+    public_id: string;
+    width?: number;
+    height?: number;
+    resource_type: string;
+    is_primary?: boolean;
+    sort_order?: number;
+  }>;
 }
 
 export interface ProductUpdate {
@@ -69,6 +78,15 @@ export interface ProductUpdate {
   image?: string;
   stock?: number;
   is_featured?: boolean;
+  images?: Array<{
+    secure_url: string;
+    public_id: string;
+    width?: number;
+    height?: number;
+    resource_type: string;
+    is_primary?: boolean;
+    sort_order?: number;
+  }>;
 }
 
 // Cart types

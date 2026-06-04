@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ToastProvider";
 import { productsAPI, uploadAPI } from "@/lib/api";
-import type { Product, ProductImage } from "@/types";
+import type { Product, ProductImage, ProductUpdate } from "@/types";
 import Button from "@/components/Button";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import MediaUploader from "@/components/MediaUploader";
@@ -82,7 +82,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setSaving(true);
 
     try {
-      const productData = {
+      const productData: ProductUpdate = {
         title: formData.title,
         description: formData.description || undefined,
         price: parseFloat(formData.price),
@@ -90,6 +90,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         image: formData.image || undefined,
         stock: parseInt(formData.stock),
         is_featured: formData.is_featured,
+        images: galleryImages.map((img, i) => ({
+          secure_url: img.secure_url,
+          public_id: img.public_id,
+          resource_type: img.resource_type,
+          is_primary: img.is_primary,
+          sort_order: img.sort_order ?? i,
+        })),
       };
 
       await productsAPI.update(resolvedParams.id, productData);
@@ -170,7 +177,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     success("Gallery updated", "Images added to gallery");
   };
 
-  const removeGalleryImage = (index: number) => {
+  const removeGalleryImage = async (index: number) => {
+    const img = galleryImages[index];
+    if (img?.public_id) {
+      try {
+        await uploadAPI.delete(img.public_id);
+      } catch {}
+    }
     setGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
 

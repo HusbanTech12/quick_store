@@ -59,6 +59,8 @@ export default function MediaUploader({
   }, [files.length, maxFiles, showError]);
 
   const uploadFiles = async (uploads: UploadedFile[]) => {
+    const completed: { url: string; public_id: string }[] = [];
+
     for (const upload of uploads) {
       setFiles((prev) =>
         prev.map((f) => (f.id === upload.id ? { ...f, status: "uploading" } : f))
@@ -78,6 +80,7 @@ export default function MediaUploader({
               : f
           )
         );
+        completed.push({ url: res.data.url, public_id: res.data.public_id });
       } catch (err: any) {
         const message = err?.response?.data?.detail || "Upload failed";
         setFiles((prev) =>
@@ -89,9 +92,6 @@ export default function MediaUploader({
       }
     }
 
-    const completed = files
-      .filter((f) => f.status === "done" && f.url)
-      .map((f) => ({ url: f.url!, public_id: f.public_id! }));
     if (onUploadComplete && completed.length > 0) {
       onUploadComplete(completed);
     }

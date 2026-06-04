@@ -230,6 +230,22 @@ def create_product(db: Session, product_data: schemas.ProductCreate) -> models.P
         is_featured=product_data.is_featured,
     )
     db.add(db_product)
+    db.flush()
+
+    for i, img_data in enumerate(product_data.images):
+        db_image = models.ProductImage(
+            id=uuid.uuid4(),
+            product_id=db_product.id,
+            secure_url=img_data.secure_url,
+            public_id=img_data.public_id,
+            width=img_data.width,
+            height=img_data.height,
+            resource_type=img_data.resource_type,
+            is_primary=img_data.is_primary,
+            sort_order=img_data.sort_order if img_data.sort_order is not None else i,
+        )
+        db.add(db_image)
+
     db.commit()
     db.refresh(db_product)
     return db_product
@@ -243,8 +259,31 @@ def update_product(
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
         return None
-    for field, value in product_update.model_dump(exclude_unset=True).items():
+
+    update_data = product_update.model_dump(exclude_unset=True)
+    images_data = update_data.pop("images", None)
+
+    for field, value in update_data.items():
         setattr(db_product, field, value)
+
+    if images_data is not None:
+        db.query(models.ProductImage).filter(
+            models.ProductImage.product_id == product_id
+        ).delete()
+        for i, img_data in enumerate(images_data):
+            db_image = models.ProductImage(
+                id=uuid.uuid4(),
+                product_id=product_id,
+                secure_url=img_data.secure_url,
+                public_id=img_data.public_id,
+                width=img_data.width,
+                height=img_data.height,
+                resource_type=img_data.resource_type,
+                is_primary=img_data.is_primary,
+                sort_order=img_data.sort_order if img_data.sort_order is not None else i,
+            )
+            db.add(db_image)
+
     db.commit()
     db.refresh(db_product)
     return db_product

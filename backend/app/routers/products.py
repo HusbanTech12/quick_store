@@ -76,17 +76,17 @@ def get_product(
     return schemas.ProductDetailResponse.model_validate(product)
 
 
-@router.post("", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=schemas.ProductDetailResponse, status_code=status.HTTP_201_CREATED)
 def create_product(
     product: schemas.ProductCreate,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[schemas.UserResponse, Depends(require_admin)]
 ):
     """Create a new product (Admin only)"""
-    return schemas.ProductResponse.model_validate(crud.create_product(db, product))
+    return schemas.ProductDetailResponse.model_validate(crud.create_product(db, product))
 
 
-@router.put("/{product_id}", response_model=schemas.ProductResponse)
+@router.put("/{product_id}", response_model=schemas.ProductDetailResponse)
 def update_product(
     product_id: uuid.UUID,
     product_update: schemas.ProductUpdate,
@@ -100,7 +100,39 @@ def update_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
-    return schemas.ProductResponse.model_validate(product)
+    return schemas.ProductDetailResponse.model_validate(product)
+
+
+@router.post("/{product_id}/images", response_model=List[schemas.ProductImageResponse])
+def add_product_images(
+    product_id: uuid.UUID,
+    images: List[schemas.GalleryImageCreate],
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[schemas.UserResponse, Depends(require_admin)]
+):
+    """Add gallery images to an existing product (Admin only)"""
+    product = crud.get_product(db, product_id, include_inactive=True)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    created = []
+    for i, img in enumerate(images):
+        image_data = schemas.ProductImageCreate(
+            product_id=product_id,
+            secure_url=img.secure_url,
+            public_id=img.public_id,
+            width=img.width,
+            height=img.height,
+            resource_type=img.resource_type,
+            is_primary=img.is_primary,
+            sort_order=img.sort_order if img.sort_order is not None else i,
+        )
+        created.append(schemas.ProductImageResponse.model_validate(
+            crud.add_product_image(db, image_data)
+        ))
+    return created
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)

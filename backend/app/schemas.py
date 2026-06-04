@@ -87,6 +87,16 @@ class ProductImageResponse(ProductImageBase):
         from_attributes = True
 
 
+class GalleryImageCreate(BaseModel):
+    secure_url: str = Field(..., max_length=500)
+    public_id: str = Field(..., max_length=255)
+    width: Optional[int] = None
+    height: Optional[int] = None
+    resource_type: str = "image"
+    is_primary: bool = False
+    sort_order: int = 0
+
+
 # ========== Product Schemas ==========
 
 class ProductBase(BaseModel):
@@ -101,7 +111,7 @@ class ProductBase(BaseModel):
 
 
 class ProductCreate(ProductBase):
-    pass
+    images: List[GalleryImageCreate] = []
 
 
 class ProductUpdate(BaseModel):
@@ -113,6 +123,7 @@ class ProductUpdate(BaseModel):
     stock: Optional[int] = Field(None, ge=0)
     is_featured: Optional[bool] = None
     is_active: Optional[bool] = None
+    images: Optional[List[GalleryImageCreate]] = None
 
 
 class ProductResponse(ProductBase):
