@@ -260,8 +260,8 @@ def update_product(
     if not db_product:
         return None
 
-    update_data = product_update.model_dump(exclude_unset=True)
-    images_data = update_data.pop("images", None)
+    update_data = product_update.model_dump(exclude_unset=True, exclude={"images"})
+    images_data = product_update.images
 
     for field, value in update_data.items():
         setattr(db_product, field, value)
