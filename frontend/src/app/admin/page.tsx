@@ -190,23 +190,23 @@ function AdminDashboardContent() {
         <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
         <div className="flex flex-wrap gap-3">
           <Button
-            variant="ghost"
+            variant="primary"
+            size="sm"
             onClick={() => router.push("/admin/products/new")}
-            className="bg-white text-brand hover:bg-white/90 border-white text-sm"
           >
             Add New Product
           </Button>
           <Button
-            variant="ghost"
+            variant="primary"
+            size="sm"
             onClick={() => router.push("/admin/inventory")}
-            className="bg-white text-brand hover:bg-white/90 border-white text-sm"
           >
             Manage Inventory
           </Button>
           <Button
-            variant="ghost"
+            variant="primary"
+            size="sm"
             onClick={() => router.push("/admin/orders")}
-            className="bg-white text-brand hover:bg-white/90 border-white text-sm"
           >
             View Orders
           </Button>
