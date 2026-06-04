@@ -162,7 +162,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
           className="space-y-3"
         >
           <div className="overflow-hidden border rounded-lg border-zinc-200 bg-zinc-50">
-            {product.image ? (
+            {images.length > 0 ? (
               <img
                 src={images[activeImage]}
                 alt={product.title}
